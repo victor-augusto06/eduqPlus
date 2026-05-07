@@ -8,7 +8,7 @@ namespace EduqPlus.API.Models;
 
 [Table("promessacurso")]
 [Index("CursoId", Name = "FK_PromessaCurso_Curso")]
-public partial class Promessacurso
+public partial class PromessaCurso
 {
     [Key]
     public Guid Id { get; set; }
