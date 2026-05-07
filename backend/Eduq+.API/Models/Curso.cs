@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace EduqPlus.API.Models;
+
+[Table("curso")]
+[Index("ProdutorId", Name = "FK_Curso_Produtor")]
+public partial class Curso
+{
+    [Key]
+    public Guid Id { get; set; }
+
+    public Guid ProdutorId { get; set; }
+
+    [StringLength(255)]
+    public string Titulo { get; set; } = null!;
+
+    [Column(TypeName = "text")]
+    public string? DescricaoOriginal { get; set; }
+
+    [StringLength(100)]
+    public string? PlataformaHospedagem { get; set; }
+
+    [StringLength(50)]
+    public string StatusAuditoria { get; set; } = null!;
+
+    public int? TrustScore { get; set; }
+
+    [Column(TypeName = "text")]
+    public string? ResumoReputacao { get; set; }
+
+    [Column("DataUltimaAnaliseIA", TypeName = "datetime")]
+    public DateTime? DataUltimaAnaliseIa { get; set; }
+
+    [InverseProperty("Curso")]
+    public virtual ICollection<Auditoria> Auditoria { get; set; } = new List<Auditoria>();
+
+    [InverseProperty("Curso")]
+    public virtual ICollection<Avaliacao> Avaliacaos { get; set; } = new List<Avaliacao>();
+
+    [InverseProperty("Curso")]
+    public virtual ICollection<Denuncia> Denuncia { get; set; } = new List<Denuncia>();
+
+    [ForeignKey("ProdutorId")]
+    [InverseProperty("Cursos")]
+    public virtual Produtor Produtor { get; set; } = null!;
+
+    [InverseProperty("Curso")]
+    public virtual ICollection<Promessacurso> Promessacursos { get; set; } = new List<Promessacurso>();
+}
