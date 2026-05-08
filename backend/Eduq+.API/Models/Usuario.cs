@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EduqPlus.API.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Models;
@@ -21,11 +22,10 @@ public partial class Usuario
     [StringLength(255)]
     public string SenhaHash { get; set; } = null!;
 
-    [StringLength(50)]
-    public string Role { get; set; } = null!;
+    public ERoleUsuario Role { get; set; }
 
     [InverseProperty("Usuario")]
-    public virtual ICollection<Avaliacao> Avaliacaos { get; set; } = new List<Avaliacao>();
+    public virtual ICollection<Avaliacao> Avaliacoes { get; set; } = new List<Avaliacao>();
 
     [InverseProperty("Usuario")]
     public virtual ICollection<Denuncia> Denuncia { get; set; } = new List<Denuncia>();

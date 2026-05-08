@@ -1,4 +1,6 @@
-﻿namespace EduqPlus.API.DTOs {
+﻿using EduqPlus.API.Enums;
+
+namespace EduqPlus.API.DTOs {
     public class DenunciaCreateDTO {
         public Guid UsuarioId { get; set; }
         public Guid CursoId { get; set; }
@@ -12,6 +14,6 @@
         public DateTime Data { get; set; }
         public string Categoria { get; set; } = null!;
         public string RelatoDetalhado { get; set; } = null!;
-        public string Status { get; set; } = null!;
+        public EStatusDenuncia Status { get; set; }
     }
 }

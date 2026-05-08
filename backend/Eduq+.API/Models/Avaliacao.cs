@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using EduqPlus.API.Enums;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Models;
 
@@ -31,16 +30,15 @@ public partial class Avaliacao
     [StringLength(500)]
     public string? UrlComprovante { get; set; }
 
-    [StringLength(50)]
-    public string StatusComprovante { get; set; } = null!;
+    public EStatusComprovante StatusComprovante { get; set; }
 
     public bool IsCompraVerificada { get; set; }
 
     [ForeignKey("CursoId")]
-    [InverseProperty("Avaliacaos")]
+    [InverseProperty("Avaliacoes")]
     public virtual Curso Curso { get; set; } = null!;
 
     [ForeignKey("UsuarioId")]
-    [InverseProperty("Avaliacaos")]
+    [InverseProperty("Avaliacoes")]
     public virtual Usuario Usuario { get; set; } = null!;
 }

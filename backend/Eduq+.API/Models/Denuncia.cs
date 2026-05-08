@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EduqPlus.API.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Models;
@@ -27,8 +28,7 @@ public partial class Denuncia
     [Column(TypeName = "text")]
     public string RelatoDetalhado { get; set; } = null!;
 
-    [StringLength(50)]
-    public string Status { get; set; } = null!;
+    public EStatusDenuncia Status { get; set; }
 
     [ForeignKey("CursoId")]
     [InverseProperty("Denuncia")]

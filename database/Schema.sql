@@ -71,9 +71,11 @@ CREATE TABLE Denuncia (
 CREATE TABLE Auditoria (
     Id CHAR(36) PRIMARY KEY,
     CursoId CHAR(36) NOT NULL,
+    AuditorId CHAR(36) NOT NULL,
     DataAuditoria DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CriterioAnalisado VARCHAR(100) NOT NULL, 
     Resultado VARCHAR(50) NOT NULL, 
     ObservacaoAuditor TEXT,
-    CONSTRAINT FK_Auditoria_Curso FOREIGN KEY (CursoId) REFERENCES Curso(Id) ON DELETE CASCADE
+    CONSTRAINT FK_Auditoria_Curso FOREIGN KEY (CursoId) REFERENCES Curso(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_Auditoria_Auditor FOREIGN KEY (AuditorId) REFERENCES Usuario(Id) ON DELETE RESTRICT
 );

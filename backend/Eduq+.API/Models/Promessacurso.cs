@@ -21,6 +21,6 @@ public partial class PromessaCurso
     public bool? CumpridaNaAuditoria { get; set; }
 
     [ForeignKey("CursoId")]
-    [InverseProperty("Promessacursos")]
+    [InverseProperty("PromessaCursos")]
     public virtual Curso Curso { get; set; } = null!;
 }

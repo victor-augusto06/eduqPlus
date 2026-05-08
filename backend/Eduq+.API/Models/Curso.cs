@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EduqPlus.API.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Models;
@@ -24,8 +25,7 @@ public partial class Curso
     [StringLength(100)]
     public string? PlataformaHospedagem { get; set; }
 
-    [StringLength(50)]
-    public string StatusAuditoria { get; set; } = null!;
+    public EStatusAuditoria StatusAuditoria { get; set; }
 
     public int? TrustScore { get; set; }
 
@@ -39,7 +39,7 @@ public partial class Curso
     public virtual ICollection<Auditoria> Auditoria { get; set; } = new List<Auditoria>();
 
     [InverseProperty("Curso")]
-    public virtual ICollection<Avaliacao> Avaliacaos { get; set; } = new List<Avaliacao>();
+    public virtual ICollection<Avaliacao> Avaliacoes { get; set; } = new List<Avaliacao>();
 
     [InverseProperty("Curso")]
     public virtual ICollection<Denuncia> Denuncia { get; set; } = new List<Denuncia>();
@@ -49,5 +49,5 @@ public partial class Curso
     public virtual Produtor Produtor { get; set; } = null!;
 
     [InverseProperty("Curso")]
-    public virtual ICollection<Promessacurso> Promessacursos { get; set; } = new List<Promessacurso>();
+    public virtual ICollection<PromessaCurso> PromessaCursos { get; set; } = new List<PromessaCurso>();
 }

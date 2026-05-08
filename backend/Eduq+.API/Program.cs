@@ -1,5 +1,7 @@
 using DotNetEnv;
+using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
+using EduqPlus.API.Services;
 using Microsoft.EntityFrameworkCore;
 
 Env.Load();
@@ -16,22 +18,20 @@ builder.Services.AddDbContext<EduqPlusContext>(options =>
     ));
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<ICursoService, CursoService>();
 
 builder.Services.AddCors(options => {
     options.AddPolicy("EduqPolicy", policy => {
-        policy.WithOrigins("http://localhost:5173") // Porta padrão do Vite
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
