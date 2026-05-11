@@ -25,6 +25,8 @@ public partial class EduqPlusContext : DbContext {
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
+    public virtual DbSet<Categoria> Categorias { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci")
@@ -81,6 +83,12 @@ public partial class EduqPlusContext : DbContext {
             entity.HasOne(d => d.Produtor).WithMany(p => p.Cursos)
                 .HasForeignKey(d => d.ProdutorId)
                 .HasConstraintName("FK_Curso_Produtor");
+
+            entity.HasOne(d => d.Usuario)
+                .WithMany(p => p.Cursos)
+                .HasForeignKey(d => d.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Curso_Usuario");
         });
 
         modelBuilder.Entity<Denuncia>(entity => {
@@ -121,6 +129,20 @@ public partial class EduqPlusContext : DbContext {
                 .HasConversion<string>()
                 .HasMaxLength(50)
                 .HasDefaultValue(ERoleUsuario.Comum);
+        });
+
+        modelBuilder.Entity<Categoria>(entity => {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.Property(e => e.Nome)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.HasMany(c => c.Cursos)
+                .WithOne(p => p.Categoria)
+                .HasForeignKey(p => p.CategoriaId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Curso_Categoria");
         });
 
         OnModelCreatingPartial(modelBuilder);

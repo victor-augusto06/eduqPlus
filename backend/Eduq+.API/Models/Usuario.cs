@@ -29,4 +29,7 @@ public partial class Usuario
 
     [InverseProperty("Usuario")]
     public virtual ICollection<Denuncia> Denuncia { get; set; } = new List<Denuncia>();
+
+    [InverseProperty("Usuario")]
+    public virtual ICollection<Curso> Cursos { get; set; } = new List<Curso>();
 }

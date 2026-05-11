@@ -86,6 +86,7 @@ namespace EduqPlus.API.Service {
                 .FirstOrDefaultAsync();
 
             var novaAuditoria = new Auditoria {
+                Id = Guid.NewGuid(),
                 CursoId = auditoriaDto.CursoId,
                 AuditorId = auditoriaDto.AuditorId,
                 CriterioAnalisado = auditoriaDto.CriterioAnalisado,

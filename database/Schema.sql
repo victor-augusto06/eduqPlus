@@ -16,20 +16,27 @@ CREATE TABLE Produtor (
     LinksSociais TEXT
 );
 
+CREATE TABLE Categorias (
+    Id CHAR(36) NOT NULL,
+    Nome VARCHAR(100) NOT NULL,
+    PRIMARY KEY (Id)
+);
+
 CREATE TABLE Curso (
     Id CHAR(36) PRIMARY KEY,
-    ProdutorId CHAR(36) NOT NULL,
+	UsuarioId CHAR(36) NULL, 
+	CategoriaId CHAR(36) NOT NULL,
     Titulo VARCHAR(255) NOT NULL,
     DescricaoOriginal TEXT,
     PlataformaHospedagem VARCHAR(100),
-    
-    StatusAuditoria VARCHAR(50) NOT NULL DEFAULT 'NaoAuditado', 
+    StatusAuditoria VARCHAR(50) NOT NULL DEFAULT 'EmAnalise',
     TrustScore INT DEFAULT 0,
     ResumoReputacao TEXT,
     DataUltimaAnaliseIA DATETIME NULL,
-    CONSTRAINT FK_Curso_Produtor FOREIGN KEY (ProdutorId) REFERENCES Produtor(Id) ON DELETE CASCADE
+	CONSTRAINT FK_Curso_Usuario FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id) ON DELETE RESTRICT,
+    CONSTRAINT FK_Curso_Produtor FOREIGN KEY (ProdutorId) REFERENCES Produtor(Id) ON DELETE CASCADE,
+	CONSTRAINT FK_Curso_Categoria FOREIGN KEY (CategoriaId) REFERENCES Categorias(Id) ON DELETE RESTRICT
 );
-
 
 CREATE TABLE PromessaCurso (
     Id CHAR(36) PRIMARY KEY,
@@ -50,7 +57,7 @@ CREATE TABLE Avaliacao (
     
 
     UrlComprovante VARCHAR(500) NULL,
-    StatusComprovante VARCHAR(50) NOT NULL DEFAULT 'NaoEnviado', 
+    StatusComprovante VARCHAR(50) NOT NULL DEFAULT 'Pendente', 
     IsCompraVerificada BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT FK_Avaliacao_Usuario FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id) ON DELETE CASCADE,
     CONSTRAINT FK_Avaliacao_Curso FOREIGN KEY (CursoId) REFERENCES Curso(Id) ON DELETE CASCADE

@@ -17,7 +17,7 @@ namespace EduqPlus.API.Service {
             try 
             {
                 var avaliacaoExistente = await _context.Avaliacoes
-                .FirstOrDefaultAsync(a => a.Id == id);
+                    .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (avaliacaoExistente == null)
                     throw new Exception("Avaliação não encontrada.");
@@ -69,7 +69,8 @@ namespace EduqPlus.API.Service {
         }
 
         public async Task<AvaliacaoResponseDTO> CriarAvaliacaoAsync(AvaliacaoCreateDTO avaliacaoDTO) {
-            var novaAvaliacao = new Avaliacao { 
+            var novaAvaliacao = new Avaliacao {
+                Id = Guid.NewGuid(),
                 CursoId = avaliacaoDTO.CursoId,
                 UsuarioId = avaliacaoDTO.UsuarioId,
                 NotaEntrega = avaliacaoDTO.NotaEntrega,

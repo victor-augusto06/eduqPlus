@@ -16,6 +16,14 @@ public partial class Curso
 
     public Guid ProdutorId { get; set; }
 
+    public Guid CategoriaId { get; set; }
+
+    public Guid? UsuarioId { get; set; }
+
+    [ForeignKey("UsuarioId")]
+    [InverseProperty("Cursos")]
+    public virtual Usuario? Usuario { get; set; }
+
     [StringLength(255)]
     public string Titulo { get; set; } = null!;
 
@@ -47,6 +55,10 @@ public partial class Curso
     [ForeignKey("ProdutorId")]
     [InverseProperty("Cursos")]
     public virtual Produtor Produtor { get; set; } = null!;
+
+    [ForeignKey("CategoriaId")]
+    [InverseProperty("Cursos")]
+    public virtual Categoria Categoria { get; set; } = null!;
 
     [InverseProperty("Curso")]
     public virtual ICollection<PromessaCurso> PromessaCursos { get; set; } = new List<PromessaCurso>();
