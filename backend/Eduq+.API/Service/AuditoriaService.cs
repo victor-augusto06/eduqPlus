@@ -20,8 +20,8 @@ namespace EduqPlus.API.Service {
                     Id = c.Id,
                     CursoId = c.CursoId,
                     AuditorId = c.AuditorId,
-                    NomeAuditor = c.Auditor.Nome,
-                    TituloCurso = c.Curso.Titulo,
+                    NomeAuditor = c.Auditor.Nome ?? string.Empty,
+                    TituloCurso = c.Curso.Titulo ?? string.Empty,
                     DataAuditoria = c.DataAuditoria,
                     Resultado = c.Resultado,
                     ObservacaoAuditor = c.ObservacaoAuditor
@@ -38,8 +38,8 @@ namespace EduqPlus.API.Service {
                     Id = c.Id,
                     CursoId = c.CursoId,
                     AuditorId = c.AuditorId, 
-                    NomeAuditor = c.Auditor.Nome,
-                    TituloCurso = c.Curso.Titulo,
+                    NomeAuditor = c.Auditor.Nome ?? string.Empty,
+                    TituloCurso = c.Curso.Titulo ?? string.Empty,
                     DataAuditoria = c.DataAuditoria,
                     Resultado = c.Resultado,
                     ObservacaoAuditor = c.ObservacaoAuditor
@@ -62,7 +62,9 @@ namespace EduqPlus.API.Service {
                 .Select(a => new AuditoriaResponseDTO {
                     Id = a.Id,
                     CursoId = a.CursoId,
-                    TituloCurso = a.Curso.Titulo,
+                    AuditorId = a.AuditorId,
+                    NomeAuditor = a.Auditor.Nome ?? string.Empty,
+                    TituloCurso = a.Curso.Titulo ?? string.Empty, 
                     DataAuditoria = a.DataAuditoria,
                     Resultado = a.Resultado,
                     ObservacaoAuditor = a.ObservacaoAuditor
@@ -73,6 +75,11 @@ namespace EduqPlus.API.Service {
         }
 
         public async Task<AuditoriaResponseDTO> CriarAuditoriaAsync(AuditoriaCreateDTO auditoriaDto) {
+
+            var auditor = await _context.Usuarios.FindAsync(auditoriaDto.AuditorId);
+
+            if (auditor == null || auditor.Role != ERoleUsuario.Admin)
+                throw new Exception("Apenas administradores podem realizar auditorias.");
 
             var infoRelacionada = await _context.Cursos
                 .Where(c => c.Id == auditoriaDto.CursoId)

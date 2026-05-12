@@ -2,7 +2,6 @@
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Net.NetworkInformation;
 
 namespace EduqPlus.API.Service {
     public class DenunciaService : IDenunciaService {
@@ -67,16 +66,15 @@ namespace EduqPlus.API.Service {
             };
         }
 
-        public async Task<DenunciaResponseDTO> CriarDenunciaAsync(DenunciaCreateDTO denunciaDTO) {
+        public async Task<DenunciaResponseDTO> CriarDenunciaAsync(DenunciaCreateDTO denunciaDTO, Guid usuarioId) {
             var novaDenuncia = new Denuncia {
                 Id = Guid.NewGuid(),
-                UsuarioId = denunciaDTO.UsuarioId,
+                UsuarioId = usuarioId,
                 CursoId = denunciaDTO.CursoId,
                 Data = DateTime.Now,
                 Categoria = denunciaDTO.Categoria,
                 RelatoDetalhado = denunciaDTO.RelatoDetalhado,
                 Status = EStatusDenuncia.EmAnalise,
-
             };
 
             _context.Denuncia.Add(novaDenuncia);
