@@ -79,7 +79,7 @@ namespace EduqPlus.API.Services {
                     CategoriaId = c.CategoriaId,
                     ProdutorId = c.ProdutorId,
                     UsuarioId = c.UsuarioId,
-                    DescricaoOriginal = c.DescricaoOriginal,
+                    DescricaoOriginal = c.DescricaoOriginal ?? string.Empty,
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
@@ -95,7 +95,7 @@ namespace EduqPlus.API.Services {
                         Id = a.Id,
                         CursoId = a.CursoId,
                         AuditorId = a.AuditorId,
-                        NomeAuditor = a.Auditor.Nome,
+                        NomeAuditor = a.Auditor.Nome ?? string.Empty,
                         TituloCurso = c.Titulo,
                         DataAuditoria = a.DataAuditoria,
                         Resultado = a.Resultado,
@@ -139,7 +139,7 @@ namespace EduqPlus.API.Services {
                     CategoriaId = c.CategoriaId,
                     ProdutorId = c.ProdutorId,
                     UsuarioId = c.UsuarioId,
-                    DescricaoOriginal = c.DescricaoOriginal,
+                    DescricaoOriginal = c.DescricaoOriginal ?? string.Empty,
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
@@ -155,7 +155,7 @@ namespace EduqPlus.API.Services {
                         Id = a.Id,
                         CursoId = a.CursoId,
                         AuditorId = a.AuditorId,
-                        NomeAuditor = a.Auditor.Nome,
+                        NomeAuditor = a.Auditor.Nome ?? string.Empty,
                         TituloCurso = c.Titulo,
                         DataAuditoria = a.DataAuditoria,
                         Resultado = a.Resultado,
@@ -199,7 +199,7 @@ namespace EduqPlus.API.Services {
                     CategoriaId = c.CategoriaId,
                     ProdutorId = c.ProdutorId,
                     UsuarioId = c.UsuarioId,
-                    DescricaoOriginal = c.DescricaoOriginal,
+                    DescricaoOriginal = c.DescricaoOriginal ?? string.Empty,
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
@@ -215,7 +215,7 @@ namespace EduqPlus.API.Services {
                         Id = a.Id,
                         CursoId = a.CursoId,
                         AuditorId = a.AuditorId,
-                        NomeAuditor = a.Auditor.Nome,
+                        NomeAuditor = a.Auditor.Nome ?? string.Empty,
                         TituloCurso = c.Titulo,
                         DataAuditoria = a.DataAuditoria,
                         Resultado = a.Resultado,
@@ -259,7 +259,7 @@ namespace EduqPlus.API.Services {
                     CategoriaId = c.CategoriaId,
                     ProdutorId = c.ProdutorId,
                     UsuarioId = c.UsuarioId,
-                    DescricaoOriginal = c.DescricaoOriginal,
+                    DescricaoOriginal = c.DescricaoOriginal ?? string.Empty,
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
@@ -275,7 +275,7 @@ namespace EduqPlus.API.Services {
                         Id = a.Id,
                         CursoId = a.CursoId,
                         AuditorId = a.AuditorId,
-                        NomeAuditor = a.Auditor.Nome,
+                        NomeAuditor = a.Auditor.Nome ?? string.Empty,
                         TituloCurso = c.Titulo,
                         DataAuditoria = a.DataAuditoria,
                         Resultado = a.Resultado,
@@ -361,7 +361,7 @@ namespace EduqPlus.API.Services {
                     Id = a.Id,
                     CursoId = a.CursoId,
                     AuditorId = a.AuditorId,
-                    NomeAuditor = a.Auditor.Nome,
+                    NomeAuditor = a.Auditor?.Nome ?? string.Empty,
                     TituloCurso = cursoExistente.Titulo,
                     DataAuditoria = a.DataAuditoria,
                     Resultado = a.Resultado,
@@ -395,7 +395,7 @@ namespace EduqPlus.API.Services {
             var cursoExistente = await _context.Cursos
                 .Include(c => c.PromessaCursos)
                 .Include(c => c.Auditoria)
-                    .ThenInclude(a => a.Auditor)
+                .ThenInclude(a => a.Auditor)
                 .Include(c => c.Avaliacoes)
                 .Include(c => c.Denuncia)
                 .FirstOrDefaultAsync(a => a.Id == id);
@@ -415,7 +415,7 @@ namespace EduqPlus.API.Services {
             cursoExistente.StatusAuditoria = cursoDto.StatusAuditoria;
             cursoExistente.TrustScore = cursoDto.TrustScore;
             cursoExistente.ResumoReputacao = cursoDto.ResumoReputacao;
-            cursoExistente.DataUltimaAnaliseIa = cursoDto?.DataUltimaAnaliseIa;
+            cursoExistente.DataUltimaAnaliseIa = cursoDto.DataUltimaAnaliseIa;
 
             _context.RemoveRange(cursoExistente.PromessaCursos);
 
@@ -448,7 +448,7 @@ namespace EduqPlus.API.Services {
                     Id = a.Id,
                     CursoId = a.CursoId,
                     AuditorId = a.AuditorId,
-                    NomeAuditor = a.Auditor.Nome,
+                    NomeAuditor = a.Auditor?.Nome ?? string.Empty,
                     TituloCurso = cursoExistente.Titulo,
                     DataAuditoria = a.DataAuditoria,
                     Resultado = a.Resultado,

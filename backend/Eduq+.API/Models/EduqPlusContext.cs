@@ -96,10 +96,15 @@ public partial class EduqPlusContext : DbContext {
 
             entity.Property(e => e.Data).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+            entity.Property(e => e.Categoria)
+                .HasConversion<string>()
+                .HasMaxLength(100)
+                .IsRequired();
+
             entity.Property(e => e.Status)
-            .HasConversion<string>()
-            .HasMaxLength(50)
-            .HasDefaultValue(EStatusDenuncia.EmAnalise);
+                .HasConversion<string>()
+                .HasMaxLength(50)
+                .HasDefaultValue(EStatusDenuncia.EmAnalise);
 
             entity.HasOne(d => d.Curso).WithMany(p => p.Denuncia)
                 .HasForeignKey(d => d.CursoId)

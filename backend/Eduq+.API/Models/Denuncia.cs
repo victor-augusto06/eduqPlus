@@ -22,8 +22,7 @@ public partial class Denuncia
     [Column(TypeName = "datetime")]
     public DateTime Data { get; set; }
 
-    [StringLength(100)]
-    public string Categoria { get; set; } = null!;
+    public ETipoDenuncia Categoria { get; set; } 
 
     [Column(TypeName = "text")]
     public string RelatoDetalhado { get; set; } = null!;
