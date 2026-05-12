@@ -11,9 +11,11 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Produtor (
     Id CHAR(36) PRIMARY KEY,
+    UsuarioId CHAR(36) NOT NULL,
     Nome VARCHAR(255) NOT NULL,
     NichoPrincipal VARCHAR(100),
-    LinksSociais TEXT
+    LinksSociais TEXT,
+    CONSTRAINT FK_Produtor_Usuario FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id) ON DELETE CASCADE
 );
 
 CREATE TABLE Categorias (
@@ -26,6 +28,7 @@ CREATE TABLE Curso (
     Id CHAR(36) PRIMARY KEY,
 	UsuarioId CHAR(36) NULL, 
 	CategoriaId CHAR(36) NOT NULL,
+	ProdutorId CHAR(36) NOT NULL,
     Titulo VARCHAR(255) NOT NULL,
     DescricaoOriginal TEXT,
     PlataformaHospedagem VARCHAR(100),

@@ -12,6 +12,8 @@ public partial class Produtor
     [Key]
     public Guid Id { get; set; }
 
+    public Guid UsuarioId { get; set; }
+
     [StringLength(255)]
     public string Nome { get; set; } = null!;
 
@@ -23,4 +25,7 @@ public partial class Produtor
 
     [InverseProperty("Produtor")]
     public virtual ICollection<Curso> Cursos { get; set; } = new List<Curso>();
+
+    [ForeignKey("UsuarioId")]
+    public virtual Usuario Usuario { get; set; } = null!;
 }

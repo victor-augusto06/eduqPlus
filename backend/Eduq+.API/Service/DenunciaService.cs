@@ -170,7 +170,7 @@ namespace EduqPlus.API.Service {
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (denuncia == null)
-                throw new Exception("Denúncia não foi encontrada!");
+                throw new Exception("Denúncia não foi encontrada.");
 
             return denuncia;
         }
