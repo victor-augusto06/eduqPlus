@@ -7,5 +7,6 @@ namespace EduqPlus.API.Interfaces
         Task<CategoriaResponseDTO> ObterPorIdAsync(Guid id);
         Task<CategoriaResponseDTO> CriarCategoriaAsync(CategoriaCreateDTO categoriaDTO);
         Task<CategoriaResponseDTO> AtualizarCategoriasAsync(Guid id, Guid usuarioId, CategoriaUpdateDTO categoriaDTO);
+        Task<bool> ExcluirCategoriaAsync(Guid id, Guid usuarioId);
     }
 }
