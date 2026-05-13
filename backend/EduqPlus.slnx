@@ -1,3 +1,5 @@
 <Solution>
+  <Folder Name="/Eduq+.API/" />
   <Project Path="Eduq+.API/EduqPlus.API.csproj" />
+  <Project Path="EduqPlus.API.Tests/EduqPlus.API.Tests.csproj" />
 </Solution>

@@ -13,18 +13,28 @@ namespace EduqPlus.API.Services {
             _context = context;
         }
 
-        public async Task<IEnumerable<CursoResponseDTO>> ObterTodosAsync() {
-            var cursos = await _context.Cursos
-                .AsNoTracking()
-                .Select(c => new CursoResponseDTO 
-                {
+        public async Task<PagedResultDTO<CursoResponseDTO>> ObterTodosPaginadoAsync(int pagina, int tamanho) {
+            var query = _context.Cursos.AsNoTracking();
+
+            var totalItens = await query.CountAsync();
+
+            var itens = await query
+                .Skip((pagina - 1) * tamanho)
+                .Take(tamanho)
+                .Select(c => new CursoResponseDTO {
                     Id = c.Id,
                     Titulo = c.Titulo,
                     TrustScore = c.TrustScore,
                     StatusAuditoria = c.StatusAuditoria
                 })
                 .ToListAsync();
-            return cursos;
+
+            return new PagedResultDTO<CursoResponseDTO> {
+                Itens = itens,
+                TotalItens = totalItens,
+                PaginaAtual = pagina,
+                TamanhoPagina = tamanho
+            };
         }
 
         public async Task<CursoResponseDTO> CriarCursoAsync(CursoCreateDTO cursoDto) {

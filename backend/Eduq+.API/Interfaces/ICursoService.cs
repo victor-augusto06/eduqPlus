@@ -5,7 +5,7 @@ using EduqPlus.API.Models;
 namespace EduqPlus.API.Interfaces {
     public interface ICursoService {
         Task<CursoResponseDTO> ObterPorIdAsync(Guid id);
-        Task<IEnumerable<CursoResponseDTO>> ObterTodosAsync();
+        Task<PagedResultDTO<CursoResponseDTO>> ObterTodosPaginadoAsync(int pagina, int tamanho);
         Task<IEnumerable<CursoResponseDTO>> ObterCursoCategoriasAsync(Guid categoriaId);
         Task<IEnumerable<CursoResponseDTO>> ObterCursoProdutorAsync(Guid produtorId);
         Task<IEnumerable<CursoResponseDTO>> ObterCursoStatusAuditoriaAsync(EStatusAuditoria status);
