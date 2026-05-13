@@ -8,7 +8,7 @@ namespace EduqPlus.API.Interfaces {
         Task<IEnumerable<DenunciaResponseDTO>> ObterDenunciaUsuarioAsync(Guid usuarioId);
         Task<IEnumerable<DenunciaResponseDTO>> ObterDenunciaCategoriaAsync(Guid cursoId, ETipoDenuncia categoria);
         Task<IEnumerable<DenunciaResponseDTO>> ObterStatusDenunciaAsync(EStatusDenuncia status);
-        Task<DenunciaResponseDTO> CriarDenunciaAsync(DenunciaCreateDTO denunciaDTO);
+        Task<DenunciaResponseDTO> CriarDenunciaAsync(DenunciaCreateDTO denunciaDTO, Guid usuarioId);
         Task<DenunciaResponseDTO> AlterarDenunciaAsync(Guid id, Guid usuarioId, DenunciaUpdateDTO denunciaDTO);
         Task<DenunciaResponseDTO> AlterarDenunciaAdminAsync(Guid id, Guid usuarioId, DenunciaUpdateAdminDTO denunciaDTO);
         Task<bool> ExcluirDenunciaAsync(Guid id, Guid usuarioId);
