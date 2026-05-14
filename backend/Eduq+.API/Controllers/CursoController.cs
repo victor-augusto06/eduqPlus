@@ -128,5 +128,13 @@ namespace EduqPlus.API.Controllers {
                 return BadRequest(new { mensagem = ex.Message });
             }
         }
+
+        [HttpGet("buscar")]
+        public async Task<IActionResult> Buscar([FromQuery] string query) {
+            if (string.IsNullOrWhiteSpace(query)) return BadRequest("O termo de busca é obrigatório.");
+
+            var resultados = await _cursoService.BuscarCursosInteligenteAsync(query);
+            return Ok(resultados);
+        }
     }
 }

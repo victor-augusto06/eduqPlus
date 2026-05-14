@@ -37,6 +37,8 @@ public partial class Curso
 
     public int? TrustScore { get; set; }
 
+    public float[]? VetorSemantico { get; set; }
+
     [Column(TypeName = "text")]
     public string? ResumoReputacao { get; set; }
 

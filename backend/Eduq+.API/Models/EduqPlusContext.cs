@@ -96,6 +96,12 @@ public partial class EduqPlusContext : DbContext {
 
             entity.Property(e => e.TrustScore).HasDefaultValue(0);
 
+            entity.Property(e => e.VetorSemantico)
+                .HasConversion(
+                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<float[]>(v, (System.Text.Json.JsonSerializerOptions?)null)!
+                );
+
             var fkProdutor = entity.HasOne(d => d.Produtor).WithMany(p => p.Cursos)
                 .HasForeignKey(d => d.ProdutorId);
 

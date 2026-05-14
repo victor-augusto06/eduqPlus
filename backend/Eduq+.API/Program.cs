@@ -41,6 +41,10 @@ builder.Services.AddKernel()
     .AddOllamaChatCompletion(
         endpoint: new Uri(ollamaUrl ?? "http://localhost:11434"),
         modelId: "llama3"
+    )
+    .AddOllamaEmbeddingGenerator(
+        endpoint: new Uri(ollamaUrl ?? "http://localhost:11434"),
+        modelId: "nomic-embed-text"
     );
 
 builder.Services.AddControllers();

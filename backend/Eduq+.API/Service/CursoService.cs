@@ -43,6 +43,9 @@ namespace EduqPlus.API.Services {
         public async Task<CursoResponseDTO> CriarCursoAsync(CursoCreateDTO cursoDto) {
             var cursoId = Guid.NewGuid();
 
+            string textoParaVetor = $"{cursoDto.Titulo}. {cursoDto.DescricaoOriginal}";
+            var vetor = await _iaService.GerarEmbeddingAsync(textoParaVetor);
+
             var novoCurso = new Curso {
                 Id = cursoId,
                 ProdutorId = cursoDto.ProdutorId,
@@ -51,6 +54,7 @@ namespace EduqPlus.API.Services {
                 Titulo = cursoDto.Titulo,
                 DescricaoOriginal = cursoDto.DescricaoOriginal,
                 PlataformaHospedagem = cursoDto.PlataformaHospedagem,
+                VetorSemantico = vetor,
                 StatusAuditoria = EStatusAuditoria.NaoAuditado,
                 PromessaCursos = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
                     Id = Guid.NewGuid(),
@@ -557,6 +561,91 @@ namespace EduqPlus.API.Services {
                     await _context.SaveChangesAsync();
                 }
             }
+        }
+
+        public async Task<IEnumerable<CursoResponseDTO>> BuscarCursosInteligenteAsync(string termoBusca) {
+            var vetorBusca = await _iaService.GerarEmbeddingAsync(termoBusca);
+
+            var cursosNoBanco = await _context.Cursos
+                .Include(c => c.PromessaCursos)
+                .Include(c => c.Auditoria)
+                    .ThenInclude(a => a.Auditor)
+                .Include(c => c.Avaliacoes)
+                .Include(c => c.Denuncia)
+                .AsNoTracking()
+                .Where(c => c.VetorSemantico != null)
+                .ToListAsync();
+
+            var ranking = cursosNoBanco.Select(curso => {
+                double mediaNotas = curso.Avaliacoes.Any()
+                    ? curso.Avaliacoes.Average(a => (a.NotaEntrega + a.NotaSuporte) / 2.0)
+                    : 0;
+
+                float similiaridade = MathUtils.CalcularSimilaridadeCosseno(vetorBusca, curso.VetorSemantico!);
+
+                double scoreFinal = (similiaridade * 0.5) + ((mediaNotas / 5.0) * 0.5);
+
+                return new {
+                    Curso = curso,
+                    ScoreFinal = scoreFinal,
+                    Similaridade = similiaridade,
+                    MediaReal = mediaNotas
+                };
+            })
+                .Where(res => res.Similaridade > 0.70 && (res.MediaReal >= 3.0 || res.Curso.Avaliacoes.Count == 0))
+                .OrderByDescending(res => res.ScoreFinal)
+                .ThenByDescending(res => res.Curso.TrustScore)
+                .Take(10)
+                .ToList();
+
+            return ranking.Select(r => new CursoResponseDTO {
+                Id = r.Curso.Id,
+                CategoriaId = r.Curso.CategoriaId,
+                ProdutorId = r.Curso.ProdutorId,
+                UsuarioId = r.Curso.UsuarioId,
+                DescricaoOriginal = r.Curso.DescricaoOriginal ?? string.Empty,
+                Titulo = r.Curso.Titulo,
+                PlataformaHospedagem = r.Curso.PlataformaHospedagem,
+                TrustScore = r.Curso.TrustScore,
+                StatusAuditoria = r.Curso.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
+                ResumoReputacao = r.Curso.ResumoReputacao,
+                PromessaCursos = r.Curso.PromessaCursos?.Select(p => new PromessaCursoResponseDTO {
+                    Id = p.Id,
+                    CursoId = p.CursoId,
+                    Descricao = p.Descricao,
+                    CumpridaNaAuditoria = p.CumpridaNaAuditoria
+                }).ToList() ?? new List<PromessaCursoResponseDTO>(),
+                Auditoria = r.Curso.Auditoria?.Select(a => new AuditoriaResponseDTO {
+                    Id = a.Id,
+                    CursoId = a.CursoId,
+                    AuditorId = a.AuditorId,
+                    NomeAuditor = a.Auditor?.Nome ?? string.Empty,
+                    TituloCurso = r.Curso.Titulo,
+                    DataAuditoria = a.DataAuditoria,
+                    Resultado = a.Resultado,
+                    ObservacaoAuditor = a.ObservacaoAuditor
+                }).ToList() ?? new List<AuditoriaResponseDTO>(),
+                Avaliacoes = r.Curso.Avaliacoes?.Select(av => new AvaliacaoResponseDTO {
+                    Id = av.Id,
+                    CursoId = av.CursoId,
+                    UsuarioId = av.UsuarioId,
+                    NotaEntrega = av.NotaEntrega,
+                    NotaSuporte = av.NotaSuporte,
+                    Comentario = av.Comentario,
+                    Data = av.Data,
+                    StatusComprovante = av.StatusComprovante,
+                    IsCompraVerificada = av.IsCompraVerificada,
+                }).ToList() ?? new List<AvaliacaoResponseDTO>(),
+                Denuncia = r.Curso.Denuncia?.Select(d => new DenunciaResponseDTO {
+                    Id = d.Id,
+                    CursoId = d.CursoId,
+                    UsuarioId = d.UsuarioId,
+                    Data = d.Data,
+                    Categoria = d.Categoria,
+                    RelatoDetalhado = d.RelatoDetalhado,
+                    Status = d.Status
+                }).ToList() ?? new List<DenunciaResponseDTO>()
+            });
         }
     }
 }

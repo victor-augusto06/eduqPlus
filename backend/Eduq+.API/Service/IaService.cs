@@ -1,6 +1,7 @@
 ﻿using EduqPlus.API.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace EduqPlus.API.Services;
 
@@ -27,5 +28,11 @@ public class IaService : IIaService {
         var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
         return result.Content ?? "Não foi possível gerar um resumo no momento.";
+    }
+
+    public async Task<float[]> GerarEmbeddingAsync(string texto) {
+        var embeddingGenerator = _kernel.GetRequiredService<Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>>>();
+        var embeddings = await embeddingGenerator.GenerateAsync(new[] { texto });
+        return embeddings[0].Vector.ToArray();
     }
 }

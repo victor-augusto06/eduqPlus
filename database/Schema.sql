@@ -26,9 +26,9 @@ CREATE TABLE Categorias (
 
 CREATE TABLE Curso (
     Id CHAR(36) PRIMARY KEY,
-	UsuarioId CHAR(36) NULL, 
-	CategoriaId CHAR(36) NOT NULL,
-	ProdutorId CHAR(36) NOT NULL,
+    UsuarioId CHAR(36) NULL, 
+    CategoriaId CHAR(36) NOT NULL,
+    ProdutorId CHAR(36) NOT NULL,
     Titulo VARCHAR(255) NOT NULL,
     DescricaoOriginal TEXT,
     PlataformaHospedagem VARCHAR(100),
@@ -36,9 +36,10 @@ CREATE TABLE Curso (
     TrustScore INT DEFAULT 0,
     ResumoReputacao TEXT,
     DataUltimaAnaliseIA DATETIME NULL,
-	CONSTRAINT FK_Curso_Usuario FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id) ON DELETE RESTRICT,
+    VetorSemantico JSON NULL,
+    CONSTRAINT FK_Curso_Usuario FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id) ON DELETE RESTRICT,
     CONSTRAINT FK_Curso_Produtor FOREIGN KEY (ProdutorId) REFERENCES Produtor(Id) ON DELETE CASCADE,
-	CONSTRAINT FK_Curso_Categoria FOREIGN KEY (CategoriaId) REFERENCES Categorias(Id) ON DELETE RESTRICT
+    CONSTRAINT FK_Curso_Categoria FOREIGN KEY (CategoriaId) REFERENCES Categorias(Id) ON DELETE RESTRICT
 );
 
 CREATE TABLE PromessaCurso (
@@ -57,8 +58,6 @@ CREATE TABLE Avaliacao (
     NotaEntrega INT NOT NULL CHECK (NotaEntrega BETWEEN 1 AND 5),
     NotaSuporte INT NOT NULL CHECK (NotaSuporte BETWEEN 1 AND 5),
     Comentario TEXT,
-    
-
     UrlComprovante VARCHAR(500) NULL,
     StatusComprovante VARCHAR(50) NOT NULL DEFAULT 'Pendente', 
     IsCompraVerificada BOOLEAN NOT NULL DEFAULT FALSE,
