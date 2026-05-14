@@ -1,13 +1,14 @@
-﻿using System.Security.Claims;
-using EduqPlus.API.Controllers;
+﻿using EduqPlus.API.Controllers;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
+using EduqPlus.API.Models;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using System.Security.Claims;
 using Xunit;
 
 namespace EduqPlus.API.Tests.Controllers;
@@ -21,10 +22,10 @@ public class UsuarioControllerTests {
         _serviceMock = new Mock<IUsuarioService>();
         _configMock = new Mock<IConfiguration>();
 
-        // Simula o appsettings.json para a geração do Token
-        var mockConfSection = new Mock<IConfigurationSection>();
-        mockConfSection.SetupGet(m => m.Value).Returns("SuperSecretKeyQuePrecisaTerMaisDe32CaracteresParaFuncionar");
-        _configMock.Setup(c => c.GetSection("JwtSettings:Secret")).Returns(mockConfSection.Object);
+        _configMock.Setup(c => c["JWT_SECRET"]).Returns("SuperSecretKeyQuePrecisaTerMaisDe32CaracteresParaFuncionar");
+        _configMock.Setup(c => c["JwtSettings:Secret"]).Returns("SuperSecretKeyQuePrecisaTerMaisDe32CaracteresParaFuncionar");
+
+        Environment.SetEnvironmentVariable("JWT_SECRET", "SuperSecretKeyQuePrecisaTerMaisDe32CaracteresParaFuncionar");
 
         _controller = new UsuarioController(_serviceMock.Object, _configMock.Object);
     }
@@ -64,9 +65,15 @@ public class UsuarioControllerTests {
     [Fact]
     public async Task Login_DeveRetornarOkComToken_QuandoCredenciaisCorretas() {
         var dto = new UsuarioLoginDTO { Email = "teste@teste.com", Senha = "123" };
-        var response = new UsuarioResponseDTO { Id = Guid.NewGuid(), Email = dto.Email, Nome = "Teste" };
+        var response = new UsuarioResponseDTO {
+            Id = Guid.NewGuid(),
+            Email = dto.Email,
+            Nome = "Teste",
+            Role = ERoleUsuario.Comum 
+        };
 
-        _serviceMock.Setup(s => s.LoginAsync(dto.Email, dto.Senha)).ReturnsAsync(response);
+        _serviceMock.Setup(s => s.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
 
         var resultado = await _controller.Login(dto);
 

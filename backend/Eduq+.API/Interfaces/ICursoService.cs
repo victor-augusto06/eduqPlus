@@ -13,5 +13,6 @@ namespace EduqPlus.API.Interfaces {
         Task<CursoResponseDTO> AlterarCursoAsync(Guid id, Guid usuarioId, CursoUpdateDTO cursoDto);
         Task<CursoResponseDTO> AlterarCursoAdminAsync(Guid id, Guid usuarioId, CursoUpdateAdminDTO cursoDto);
         Task<bool> ExcluirCursoAsync(Guid id, Guid usuarioId);
+        Task VerificarEAtualizarResumoIaAsync(Guid cursoId);
     }
 }

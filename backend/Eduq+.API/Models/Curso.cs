@@ -33,7 +33,7 @@ public partial class Curso
     [StringLength(100)]
     public string? PlataformaHospedagem { get; set; }
 
-    public EStatusAuditoria StatusAuditoria { get; set; }
+    public EStatusAuditoria? StatusAuditoria { get; set; }
 
     public int? TrustScore { get; set; }
 

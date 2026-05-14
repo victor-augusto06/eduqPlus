@@ -1,9 +1,11 @@
 ﻿using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
+using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
 using EduqPlus.API.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace EduqPlus.API.Tests.Services;
@@ -30,7 +32,7 @@ public class CursoServiceTests {
     [Fact]
     public async Task CriarCursoAsync_DeveCriarComSucesso_QuandoDadosValidos() {
         var context = CriarContexto();
-        var service = new CursoService(context);
+        var service = new CursoService(context, new Mock<IIaService>().Object);
         var dto = new CursoCreateDTO {
             Titulo = "Curso de .NET",
             DescricaoOriginal = "Descricao",
@@ -48,7 +50,7 @@ public class CursoServiceTests {
     [Fact]
     public async Task ObterPorIdAsync_DeveLancarExcecao_QuandoCursoNaoExiste() {
         var context = CriarContexto();
-        var service = new CursoService(context);
+        var service = new CursoService(context, new Mock<IIaService>().Object);
 
         Func<Task> acao = async () => await service.ObterPorIdAsync(Guid.NewGuid());
 
@@ -65,7 +67,7 @@ public class CursoServiceTests {
         context.Cursos.Add(new Curso { Id = cursoId, Titulo = "Original", UsuarioId = donoId });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new CursoService(context);
+        var service = new CursoService(context, new Mock<IIaService>().Object);
         var dto = new CursoUpdateDTO { Titulo = "Hackeado" };
 
         Func<Task> acao = async () => await service.AlterarCursoAsync(cursoId, invasorId, dto);
@@ -83,7 +85,7 @@ public class CursoServiceTests {
         context.Cursos.Add(new Curso { Id = cursoId, Titulo = "Original", UsuarioId = Guid.NewGuid() });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new CursoService(context);
+        var service = new CursoService(context, new Mock<IIaService>().Object);
         var dto = new CursoUpdateAdminDTO { Titulo = "Alterado por Admin", StatusAuditoria = EStatusAuditoria.Aprovado };
 
         var resultado = await service.AlterarCursoAdminAsync(cursoId, adminId, dto);
@@ -102,7 +104,7 @@ public class CursoServiceTests {
         context.Cursos.Add(new Curso { Id = cursoId, Titulo = "Curso Teste", UsuarioId = donoId });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new CursoService(context);
+        var service = new CursoService(context, new Mock<IIaService>().Object);
         var resultado = await service.ExcluirCursoAsync(cursoId, donoId);
 
         resultado.Should().BeTrue();
@@ -119,7 +121,7 @@ public class CursoServiceTests {
         context.Cursos.Add(new Curso { Id = cursoId, Titulo = "Curso Teste", UsuarioId = Guid.NewGuid() });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new CursoService(context);
+        var service = new CursoService(context, new Mock<IIaService>().Object);
         var resultado = await service.ExcluirCursoAsync(cursoId, adminId);
 
         resultado.Should().BeTrue();

@@ -91,7 +91,8 @@ public partial class EduqPlusContext : DbContext {
             entity.Property(e => e.StatusAuditoria)
                 .HasConversion<string>()
                 .HasMaxLength(50)
-                .HasDefaultValue(EStatusAuditoria.EmAnalise);
+                .HasDefaultValue(EStatusAuditoria.NaoAuditado)
+                .HasSentinel(EStatusAuditoria.NaoAuditado);
 
             entity.Property(e => e.TrustScore).HasDefaultValue(0);
 

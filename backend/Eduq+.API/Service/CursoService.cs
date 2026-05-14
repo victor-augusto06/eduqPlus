@@ -3,14 +3,17 @@ using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel.Services;
 
 namespace EduqPlus.API.Services {
     public class CursoService : ICursoService {
-
+        
         private readonly EduqPlusContext _context;
+        private readonly IIaService _iaService;
 
-        public CursoService(EduqPlusContext context) {
+        public CursoService(EduqPlusContext context, IIaService iaService) {
             _context = context;
+            _iaService = iaService;
         }
 
         public async Task<PagedResultDTO<CursoResponseDTO>> ObterTodosPaginadoAsync(int pagina, int tamanho) {
@@ -25,7 +28,7 @@ namespace EduqPlus.API.Services {
                     Id = c.Id,
                     Titulo = c.Titulo,
                     TrustScore = c.TrustScore,
-                    StatusAuditoria = c.StatusAuditoria
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado
                 })
                 .ToListAsync();
 
@@ -48,6 +51,7 @@ namespace EduqPlus.API.Services {
                 Titulo = cursoDto.Titulo,
                 DescricaoOriginal = cursoDto.DescricaoOriginal,
                 PlataformaHospedagem = cursoDto.PlataformaHospedagem,
+                StatusAuditoria = EStatusAuditoria.NaoAuditado,
                 PromessaCursos = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
                     Id = Guid.NewGuid(),
                     CursoId = cursoId,
@@ -67,7 +71,7 @@ namespace EduqPlus.API.Services {
                 Titulo = novoCurso.Titulo,
                 PlataformaHospedagem = novoCurso.PlataformaHospedagem,
                 TrustScore = novoCurso.TrustScore,
-                StatusAuditoria = novoCurso.StatusAuditoria,
+                StatusAuditoria = novoCurso.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                 ResumoReputacao = novoCurso.ResumoReputacao,
                 PromessaCursos = novoCurso.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                     Id = p.Id,
@@ -93,7 +97,7 @@ namespace EduqPlus.API.Services {
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
-                    StatusAuditoria = c.StatusAuditoria,
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                     ResumoReputacao = c.ResumoReputacao,
                     PromessaCursos = c.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                         Id = p.Id,
@@ -153,7 +157,7 @@ namespace EduqPlus.API.Services {
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
-                    StatusAuditoria = c.StatusAuditoria,
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                     ResumoReputacao = c.ResumoReputacao,
                     PromessaCursos = c.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                         Id = p.Id,
@@ -213,7 +217,7 @@ namespace EduqPlus.API.Services {
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
-                    StatusAuditoria = c.StatusAuditoria,
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                     ResumoReputacao = c.ResumoReputacao,
                     PromessaCursos = c.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                         Id = p.Id,
@@ -273,7 +277,7 @@ namespace EduqPlus.API.Services {
                     Titulo = c.Titulo,
                     PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
-                    StatusAuditoria = c.StatusAuditoria,
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                     ResumoReputacao = c.ResumoReputacao,
                     PromessaCursos = c.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                         Id = p.Id,
@@ -359,7 +363,7 @@ namespace EduqPlus.API.Services {
                 Titulo = cursoExistente.Titulo,
                 PlataformaHospedagem = cursoExistente.PlataformaHospedagem,
                 TrustScore = cursoExistente.TrustScore,
-                StatusAuditoria = cursoExistente.StatusAuditoria,
+                StatusAuditoria = cursoExistente.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                 ResumoReputacao = cursoExistente.ResumoReputacao,
                 PromessaCursos = cursoExistente.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                     Id = p.Id,
@@ -446,7 +450,7 @@ namespace EduqPlus.API.Services {
                 Titulo = cursoExistente.Titulo,
                 PlataformaHospedagem = cursoExistente.PlataformaHospedagem,
                 TrustScore = cursoExistente.TrustScore,
-                StatusAuditoria = cursoExistente.StatusAuditoria,
+                StatusAuditoria = cursoExistente.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
                 ResumoReputacao = cursoExistente.ResumoReputacao,
                 PromessaCursos = cursoExistente.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
                     Id = p.Id,
@@ -511,6 +515,47 @@ namespace EduqPlus.API.Services {
             catch (Exception ex) {
                 Console.WriteLine("CursoService.ExcluirCursoAsync - Erro inesperado ocorreu " + ex.ToString());
                 return false;
+            }
+        }
+
+        public async Task VerificarEAtualizarResumoIaAsync(Guid cursoId) {
+            var curso = await _context.Cursos.FindAsync(cursoId);
+            if (curso == null) return;
+
+            int limiteNovosRegistros = 8;
+
+            var queryAvaliacoes = _context.Avaliacoes.Where(a => a.CursoId == cursoId);
+            var queryDenuncias = _context.Denuncia.Where(d => d.CursoId == cursoId);
+
+            if (curso.DataUltimaAnaliseIa.HasValue) {
+                queryAvaliacoes = queryAvaliacoes.Where(a => a.Data > curso.DataUltimaAnaliseIa.Value);
+                queryDenuncias = queryDenuncias.Where(d => d.Data > curso.DataUltimaAnaliseIa.Value);
+            }
+
+            int totalNovos = await queryAvaliacoes.CountAsync() + await queryDenuncias.CountAsync();
+
+            if (totalNovos >= limiteNovosRegistros || !curso.DataUltimaAnaliseIa.HasValue) {
+
+                var textosAvaliacoes = await _context.Avaliacoes
+                    .Where(a => a.CursoId == cursoId && !string.IsNullOrEmpty(a.Comentario))
+                    .Select(a => $"[Avaliação - Nota {a.NotaEntrega}]: {a.Comentario}")
+                    .ToListAsync();
+
+                var textosDenuncias = await _context.Denuncia
+                    .Where(d => d.CursoId == cursoId && !string.IsNullOrEmpty(d.RelatoDetalhado))
+                    .Select(d => $"[Denúncia - {d.Categoria}]: {d.RelatoDetalhado}")
+                    .ToListAsync();
+
+                var todosComentarios = textosAvaliacoes.Concat(textosDenuncias).ToList();
+
+                if (todosComentarios.Any()) {
+                    var resumo = await _iaService.GerarResumoReputacaoAsync(todosComentarios);
+
+                    curso.ResumoReputacao = resumo;
+                    curso.DataUltimaAnaliseIa = DateTime.Now;
+
+                    await _context.SaveChangesAsync();
+                }
             }
         }
     }

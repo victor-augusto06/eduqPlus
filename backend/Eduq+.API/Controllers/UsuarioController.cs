@@ -44,7 +44,7 @@ namespace EduqPlus.API.Controllers {
 
                 return Ok(new {
                     usuario = usuario,
-                    token = token
+                    token = $"Bearer {token}"
                 });
             } catch (Exception ex) {
                 return Unauthorized(new { mensagem = ex.Message });
@@ -118,7 +118,9 @@ namespace EduqPlus.API.Controllers {
 
         private string GerarTokenJwt(UsuarioResponseDTO usuario) {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtSettings:Secret").Value!);
+            var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
+                ?? throw new Exception("A chave JWT_SECRET não foi encontrada no arquivo .env");
+            var key = Encoding.ASCII.GetBytes(jwtSecret);
 
             var tokenDescriptor = new SecurityTokenDescriptor {
                 Subject = new ClaimsIdentity(new[] {

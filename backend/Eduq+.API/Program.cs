@@ -7,21 +7,45 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Services;
 using System.Text;
 
-Env.Load();
+Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
+
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
+var ollamaUrl = Environment.GetEnvironmentVariable("OLLAMA_URL");
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+
+Console.WriteLine("=== DEBUG DE VARIAVEIS ===");
+Console.WriteLine($"DB_CONNECTION: '{connectionString}'");
+Console.WriteLine($"JWT_SECRET: '{jwtSecret}'");
+Console.WriteLine("==========================");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new Exception("ERRO CRÍTICO: DB_CONNECTION não foi encontrada. Verifique se o arquivo .env existe e está na raiz do projeto.");
+
+if (string.IsNullOrWhiteSpace(jwtSecret))
+    throw new Exception("ERRO CRÍTICO: JWT_SECRET não foi encontrada no arquivo .env.");
 
 builder.Services.AddDbContext<EduqPlusContext>(options =>
     options.UseMySql(
         connectionString,
-        ServerVersion.AutoDetect(connectionString)
+        new MySqlServerVersion(new Version(8, 0, 32))
     ));
+
+builder.Services.AddKernel()
+    .AddOllamaChatCompletion(
+        endpoint: new Uri(ollamaUrl ?? "http://localhost:11434"),
+        modelId: "llama3"
+    );
 
 builder.Services.AddControllers();
 
+builder.Services.AddScoped<IIaService, IaService>();
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 builder.Services.AddScoped<IAvaliacaoService, AvaliacaoService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
@@ -31,7 +55,11 @@ builder.Services.AddScoped<IProdutorService, ProdutorService>();
 builder.Services.AddScoped<IPromessaCursoService, PromessaCursoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtSettings:Secret").Value!);
+if (string.IsNullOrEmpty(jwtSecret)) {
+    throw new Exception("A chave JWT_SECRET não foi encontrada no arquivo .env");
+}
+var key = Encoding.ASCII.GetBytes(jwtSecret);
+
 builder.Services.AddAuthentication(x => {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;

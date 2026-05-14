@@ -1,15 +1,18 @@
 ﻿using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
+using EduqPlus.API.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Service {
     public class DenunciaService : IDenunciaService {
 
         private readonly EduqPlusContext _context;
+        private readonly ICursoService _cursoService;
 
-        public DenunciaService(EduqPlusContext context) {
+        public DenunciaService(EduqPlusContext context, ICursoService cursoService) {
             _context = context;
+            _cursoService = cursoService;
         }
         public async Task<DenunciaResponseDTO> AlterarDenunciaAdminAsync(Guid id, Guid usuarioId, DenunciaUpdateAdminDTO denunciaDTO) {
             var denuncia = await _context.Denuncia
@@ -79,6 +82,8 @@ namespace EduqPlus.API.Service {
 
             _context.Denuncia.Add(novaDenuncia);
             await _context.SaveChangesAsync();
+
+            await _cursoService.VerificarEAtualizarResumoIaAsync(novaDenuncia.CursoId);
 
             return new DenunciaResponseDTO {
                 Id = novaDenuncia.Id,

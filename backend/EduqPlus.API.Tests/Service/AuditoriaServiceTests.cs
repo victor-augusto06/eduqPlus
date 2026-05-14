@@ -110,7 +110,7 @@ public class AuditoriaServiceTests {
             Id = auditoriaId,
             AuditorId = adminId,
             CursoId = cursoId,
-            Resultado = EStatusAuditoria.EmAnalise,
+            Resultado = EStatusAuditoria.NaoAuditado,
             CriterioAnalisado = "Qualidade do áudio"
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -137,7 +137,7 @@ public class AuditoriaServiceTests {
         context.Cursos.Add(CriarCursoFake(cursoId, adminId));
 
         context.Auditoria.AddRange(
-            new Auditoria { Id = Guid.NewGuid(), CursoId = cursoId, AuditorId = adminId, Resultado = EStatusAuditoria.EmAnalise, CriterioAnalisado = "Vídeo" },
+            new Auditoria { Id = Guid.NewGuid(), CursoId = cursoId, AuditorId = adminId, Resultado = EStatusAuditoria.NaoAuditado, CriterioAnalisado = "Vídeo" },
             new Auditoria { Id = Guid.NewGuid(), CursoId = cursoId, AuditorId = adminId, Resultado = EStatusAuditoria.Aprovado, CriterioAnalisado = "Áudio" }
         );
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -146,7 +146,7 @@ public class AuditoriaServiceTests {
         var resultado = await service.ObterAuditoriasPendentesAsync();
 
         resultado.Should().HaveCount(1);
-        resultado.First().Resultado.Should().Be(EStatusAuditoria.EmAnalise);
+        resultado.First().Resultado.Should().Be(EStatusAuditoria.NaoAuditado);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class AuditoriaServiceTests {
         context.Cursos.Add(CriarCursoFake(cursoId, adminId));
 
         context.Auditoria.AddRange(
-            new Auditoria { Id = Guid.NewGuid(), CursoId = cursoId, AuditorId = adminId, Resultado = EStatusAuditoria.EmAnalise, CriterioAnalisado = "Didática" },
+            new Auditoria { Id = Guid.NewGuid(), CursoId = cursoId, AuditorId = adminId, Resultado = EStatusAuditoria.NaoAuditado, CriterioAnalisado = "Didática" },
             new Auditoria { Id = Guid.NewGuid(), CursoId = cursoId, AuditorId = adminId, Resultado = EStatusAuditoria.Reprovado, CriterioAnalisado = "Conteúdo" }
         );
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);

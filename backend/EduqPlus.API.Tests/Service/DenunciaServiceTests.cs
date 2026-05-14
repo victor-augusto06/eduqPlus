@@ -1,9 +1,11 @@
 ﻿using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
+using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
 using EduqPlus.API.Service;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace EduqPlus.API.Tests.Services;
@@ -30,7 +32,7 @@ public class DenunciaServiceTests {
     [Fact]
     public async Task CriarDenunciaAsync_DeveCriarComSucesso() {
         var context = CriarContexto();
-        var service = new DenunciaService(context);
+        var service = new DenunciaService(context, new Mock<ICursoService>().Object);
         var dto = new DenunciaCreateDTO {
             CursoId = Guid.NewGuid(),
             Categoria = ETipoDenuncia.FraudeOuGolpe,
@@ -61,7 +63,7 @@ public class DenunciaServiceTests {
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new DenunciaService(context);
+        var service = new DenunciaService(context, new Mock<ICursoService>().Object);
         var dto = new DenunciaUpdateDTO { Categoria = ETipoDenuncia.DiscursoDeOdio };
 
         Func<Task> acao = async () => await service.AlterarDenunciaAsync(denunciaId, invasorId, dto);
@@ -85,7 +87,7 @@ public class DenunciaServiceTests {
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new DenunciaService(context);
+        var service = new DenunciaService(context, new Mock<ICursoService>().Object);
         var dto = new DenunciaUpdateAdminDTO { Status = EStatusDenuncia.Aceita };
 
         Func<Task> acao = async () => await service.AlterarDenunciaAdminAsync(denunciaId, usuarioId, dto);
@@ -109,7 +111,7 @@ public class DenunciaServiceTests {
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new DenunciaService(context);
+        var service = new DenunciaService(context, new Mock<ICursoService>().Object);
 
         var resultado = await service.ExcluirDenunciaAsync(denunciaId, adminId);
 
@@ -120,7 +122,7 @@ public class DenunciaServiceTests {
     [Fact]
     public async Task ObterPorIdAsync_DeveLancarExcecao_QuandoNaoExistir() {
         var context = CriarContexto();
-        var service = new DenunciaService(context);
+        var service = new DenunciaService(context, new Mock<ICursoService>().Object);
 
         Func<Task> acao = async () => await service.ObterPorIdAsync(Guid.NewGuid());
 

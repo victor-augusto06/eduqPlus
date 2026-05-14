@@ -2,15 +2,18 @@
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
+using EduqPlus.API.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Service {
     public class AvaliacaoService : IAvaliacaoService {
 
         private readonly EduqPlusContext _context;
+        private readonly ICursoService _cursoService;
 
-        public AvaliacaoService(EduqPlusContext context) {
+        public AvaliacaoService(EduqPlusContext context, ICursoService cursoService) {
             _context = context;
+            _cursoService = cursoService;
         }
 
         public async Task<bool> ExcluirAvaliacaoAsync(Guid id, Guid usuarioId) {
@@ -77,12 +80,15 @@ namespace EduqPlus.API.Service {
                 NotaSuporte = avaliacaoDTO.NotaSuporte,
                 Comentario = avaliacaoDTO.Comentario,
                 UrlComprovante = avaliacaoDTO.UrlComprovante,
+                StatusComprovante = EStatusComprovante.Pendente,
                 Data = DateTime.Now,
                 IsCompraVerificada = false
             };
 
             _context.Avaliacoes.Add(novaAvaliacao);
             await _context.SaveChangesAsync();
+
+            await _cursoService.VerificarEAtualizarResumoIaAsync(novaAvaliacao.CursoId);
 
             return new AvaliacaoResponseDTO {
                 Id = novaAvaliacao.Id,

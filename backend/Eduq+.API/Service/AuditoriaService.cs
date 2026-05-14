@@ -33,7 +33,7 @@ namespace EduqPlus.API.Service {
         public async Task<IEnumerable<AuditoriaResponseDTO>> ObterAuditoriasPendentesAsync() {
             var auditorias = await _context.Auditoria
                 .AsNoTracking()
-                .Where(a => a.Resultado == EStatusAuditoria.EmAnalise)
+                .Where(a => a.Resultado == EStatusAuditoria.NaoAuditado)
                 .Select(c => new AuditoriaResponseDTO {
                     Id = c.Id,
                     CursoId = c.CursoId,
@@ -52,7 +52,7 @@ namespace EduqPlus.API.Service {
 
             var query = _context.Auditoria
                 .AsNoTracking()
-                .Where(a => a.Resultado != EStatusAuditoria.EmAnalise);
+                .Where(a => a.Resultado != EStatusAuditoria.NaoAuditado);
 
             if (auditorId.HasValue) {
                 query = query.Where(a => a.AuditorId == auditorId.Value);
