@@ -3,4 +3,5 @@
 public interface IIaService {
     Task<string> GerarResumoReputacaoAsync(IEnumerable<string> comentarios);
     Task<float[]> GerarEmbeddingAsync(string texto);
+    Task<bool> VerificarIntencaoQualidadeAsync(string query);
 }

@@ -565,6 +565,7 @@ namespace EduqPlus.API.Services {
 
         public async Task<IEnumerable<CursoResponseDTO>> BuscarCursosInteligenteAsync(string termoBusca) {
             var vetorBusca = await _iaService.GerarEmbeddingAsync(termoBusca);
+            bool usuarioBuscaQualidade = await _iaService.VerificarIntencaoQualidadeAsync(termoBusca);
 
             var cursosNoBanco = await _context.Cursos
                 .Include(c => c.PromessaCursos)
@@ -583,7 +584,7 @@ namespace EduqPlus.API.Services {
 
                 float similiaridade = MathUtils.CalcularSimilaridadeCosseno(vetorBusca, curso.VetorSemantico!);
 
-                double scoreFinal = (similiaridade * 0.5) + ((mediaNotas / 5.0) * 0.5);
+                double scoreFinal = (similiaridade * 0.7) + ((mediaNotas / 5.0) * 0.3);
 
                 return new {
                     Curso = curso,
@@ -592,7 +593,8 @@ namespace EduqPlus.API.Services {
                     MediaReal = mediaNotas
                 };
             })
-                .Where(res => res.Similaridade > 0.70 && (res.MediaReal >= 3.0 || res.Curso.Avaliacoes.Count == 0))
+                .Where(res => res.Similaridade > 0.75 &&
+                      (!usuarioBuscaQualidade || (res.MediaReal >= 3.0 && res.Curso.Avaliacoes.Count > 0)))
                 .OrderByDescending(res => res.ScoreFinal)
                 .ThenByDescending(res => res.Curso.TrustScore)
                 .Take(10)

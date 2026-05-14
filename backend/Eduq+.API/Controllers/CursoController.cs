@@ -130,6 +130,7 @@ namespace EduqPlus.API.Controllers {
         }
 
         [HttpGet("buscar")]
+        [AllowAnonymous]
         public async Task<IActionResult> Buscar([FromQuery] string query) {
             if (string.IsNullOrWhiteSpace(query)) return BadRequest("O termo de busca é obrigatório.");
 

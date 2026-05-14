@@ -1,7 +1,6 @@
 ﻿using EduqPlus.API.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace EduqPlus.API.Services;
 
@@ -28,6 +27,27 @@ public class IaService : IIaService {
         var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
         return result.Content ?? "Não foi possível gerar um resumo no momento.";
+    }
+
+    public async Task<bool> VerificarIntencaoQualidadeAsync(string query) {
+        var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatHistory = new ChatHistory();
+
+        chatHistory.AddSystemMessage(
+            "Você é um classificador binário rígido. Responda APENAS 'SIM' ou 'NAO'. " +
+            "Analise se o usuário quer filtragem por QUALIDADE (notas, melhores, reputação). " +
+            "IMPORTANTE: Se houver um termo de qualidade (bom, melhor, nota, top), a resposta deve ser SIM, " +
+            "mesmo que a frase comece com 'me traga' ou 'quais'. " +
+            "Exemplos SIM: 'me traga os melhores de investimentos', 'cursos com boas notas', 'quais são os mais confiáveis'. " +
+            "Exemplos NAO: 'me traga cursos de investimentos', 'quais cursos de C# existem', 'lista de investimentos'.");
+
+        chatHistory.AddUserMessage($"O usuário busca explicitamente por qualidade ou confiança nesta busca: \"{query}\"?");
+
+        var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var textResponse = result.Content?.Trim().ToUpper() ?? "";
+
+        return textResponse.StartsWith("SIM") || textResponse.Contains("SIM");
     }
 
     public async Task<float[]> GerarEmbeddingAsync(string texto) {
