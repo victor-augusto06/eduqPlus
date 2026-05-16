@@ -20,9 +20,9 @@ public partial class Avaliacao
     [Column(TypeName = "datetime")]
     public DateTime Data { get; set; }
 
-    public int NotaEntrega { get; set; }
+    public double NotaEntrega { get; set; }
 
-    public int NotaSuporte { get; set; }
+    public double NotaSuporte { get; set; }
 
     [Column(TypeName = "text")]
     public string? Comentario { get; set; }

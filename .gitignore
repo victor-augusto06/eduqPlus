@@ -55,3 +55,5 @@ o)
 .env.test.local
 .env.production.local
 !.env.example
+
+files/

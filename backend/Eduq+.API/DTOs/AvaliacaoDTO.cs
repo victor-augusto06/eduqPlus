@@ -4,15 +4,15 @@ namespace EduqPlus.API.DTOs {
     public class AvaliacaoCreateDTO {
         public Guid CursoId { get; set; }
         public Guid UsuarioId { get; set; }
-        public int NotaEntrega { get; set; }
-        public int NotaSuporte { get; set; }
+        public double NotaEntrega { get; set; }
+        public double NotaSuporte { get; set; }
         public string? Comentario { get; set; }
         public IFormFile? UrlComprovante { get; set; }
 
     }
     public class AvaliacaoUpdateDTO {
-        public int NotaEntrega { get; set; }
-        public int NotaSuporte { get; set; }
+        public double NotaEntrega { get; set; }
+        public double NotaSuporte { get; set; }
         public string? Comentario { get; set; }
         public string? UrlComprovante { get; set; }
     }
@@ -20,8 +20,9 @@ namespace EduqPlus.API.DTOs {
         public Guid Id { get; set; }
         public Guid CursoId { get; set; }
         public Guid UsuarioId { get; set; }
-        public int NotaEntrega { get; set; }
-        public int NotaSuporte { get; set; }
+        public double NotaEntrega { get; set; }
+        public double NotaSuporte { get; set; }
+        public string? NomeUsuario { get; set; }
         public string? Comentario { get; set; }
         public DateTime Data { get; set; }
         public EStatusComprovante StatusComprovante { get; set; }

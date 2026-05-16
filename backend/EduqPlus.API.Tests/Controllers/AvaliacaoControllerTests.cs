@@ -34,7 +34,7 @@ public class AvaliacaoControllerTests {
     public async Task Criar_DeveRetornarCreated_QuandoDadosValidos() {
         var usuarioId = Guid.NewGuid();
         MockUsuarioAutenticado(usuarioId);
-        var dto = new AvaliacaoCreateDTO { CursoId = Guid.NewGuid(), NotaEntrega = 5 };
+        var dto = new AvaliacaoCreateDTO { CursoId = Guid.NewGuid(), NotaEntrega = 5.0 };
         var response = new AvaliacaoResponseDTO { Id = Guid.NewGuid(), UsuarioId = usuarioId };
 
         _serviceMock.Setup(s => s.CriarAvaliacaoAsync(It.IsAny<AvaliacaoCreateDTO>())).ReturnsAsync(response);

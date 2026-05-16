@@ -169,6 +169,7 @@ namespace EduqPlus.API.Services {
                         Id = av.Id,
                         CursoId = av.CursoId,
                         UsuarioId = av.UsuarioId,
+                        NomeUsuario = av.Usuario.Nome ?? "Aluno",
                         NotaEntrega = av.NotaEntrega,
                         NotaSuporte = av.NotaSuporte,
                         Comentario = av.Comentario,

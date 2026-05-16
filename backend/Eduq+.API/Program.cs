@@ -8,13 +8,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Services;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 using System.Text;
 
 Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
+
+var contentRoot = builder.Environment.ContentRootPath;
+
+var baseFilesDirectory = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "files"));
+
+if (!Directory.Exists(baseFilesDirectory)) {
+    Directory.CreateDirectory(baseFilesDirectory);
+}
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
 var ollamaUrl = Environment.GetEnvironmentVariable("OLLAMA_URL");
@@ -117,6 +126,13 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new PhysicalFileProvider(baseFilesDirectory),
+    RequestPath = "/files"
+});
 
 app.UseHttpsRedirection();
 

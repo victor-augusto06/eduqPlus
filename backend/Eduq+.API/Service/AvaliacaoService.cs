@@ -35,7 +35,8 @@ namespace EduqPlus.API.Service {
                 if (!string.IsNullOrEmpty(avaliacaoExistente.UrlComprovante)) {
 
                     string caminhoRelativo = avaliacaoExistente.UrlComprovante.TrimStart('/');
-                    string caminhoFisicoCompleto = Path.Combine(_environment.WebRootPath, caminhoRelativo);
+                    string pastaBase = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", ".."));
+                    string caminhoFisicoCompleto = Path.Combine(pastaBase, caminhoRelativo.Replace("/", Path.DirectorySeparatorChar.ToString()));
 
                     if (System.IO.File.Exists(caminhoFisicoCompleto)) {
                         System.IO.File.Delete(caminhoFisicoCompleto);
@@ -107,12 +108,12 @@ namespace EduqPlus.API.Service {
                 if (!extensoesPermitidas.Contains(extensao))
                     throw new Exception("Formato de arquivo não permitido. Envie apenas PDF, JPG ou PNG.");
 
-                if (avaliacaoDTO.UrlComprovante.Length > 5 * 1024 * 1024) 
+                if (avaliacaoDTO.UrlComprovante.Length > 5 * 1024 * 1024)
                     throw new Exception("O arquivo excede o tamanho máximo permitido de 5MB.");
 
-                string nomeUnicoArquivo = Guid.NewGuid().ToString() + Path.GetExtension(avaliacaoDTO.UrlComprovante.FileName);
+                string nomeUnicoArquivo = Guid.NewGuid().ToString() + extensao;
 
-                string pastaDestino = Path.Combine(_environment.WebRootPath, "uploads", "comprovantes");
+                string pastaDestino = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", "..", "files", "comprovantes"));
 
                 if (!Directory.Exists(pastaDestino))
                     Directory.CreateDirectory(pastaDestino);
@@ -123,7 +124,7 @@ namespace EduqPlus.API.Service {
                     await avaliacaoDTO.UrlComprovante.CopyToAsync(stream);
                 }
 
-                urlCaminhoArquivo = $"/uploads/comprovantes/{nomeUnicoArquivo}";
+                urlCaminhoArquivo = $"/files/comprovantes/{nomeUnicoArquivo}";
             }
 
             var novaAvaliacao = new Avaliacao {

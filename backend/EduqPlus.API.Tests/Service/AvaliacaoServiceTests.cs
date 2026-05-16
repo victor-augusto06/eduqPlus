@@ -49,8 +49,8 @@ public class AvaliacaoServiceTests {
         var dto = new AvaliacaoCreateDTO {
             CursoId = curso.Id,
             UsuarioId = Guid.NewGuid(),
-            NotaEntrega = 5,
-            NotaSuporte = 4,
+            NotaEntrega = 5.0,
+            NotaSuporte = 4.0,
             Comentario = "Ótimo curso"
         };
 
