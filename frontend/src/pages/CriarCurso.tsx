@@ -23,6 +23,7 @@ const CriarCurso = () => {
   const [loadingInit, setLoadingInit] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [error, setError] = useState('');
+  const [promessas, setPromessas] = useState<string[]>(['']);
 
   const [titulo, setTitulo] = useState('');
   const [descricaoOriginal, setDescricaoOriginal] = useState('');
@@ -88,6 +89,24 @@ const CriarCurso = () => {
     }
   };
 
+  const handlePromessaChange = (index: number, value: string) => {
+    const novasPromessas = [...promessas];
+    novasPromessas[index] = value;
+    setPromessas(novasPromessas);
+  };
+
+  const handleAdicionarPromessa = () => {
+    setPromessas([...promessas, '']);
+  };
+
+  const handleRemoverPromessa = (index: number) => {
+    if (promessas.length > 1) {
+      setPromessas(promessas.filter((_, i) => i !== index));
+    } else {
+      setPromessas(['']); // Se for o único, apenas limpa
+    }
+  };
+
   const handleCriarCategoria = async () => {
     if (!novaCategoriaNome.trim()) return;
     setLoadingCategoria(true);
@@ -112,10 +131,15 @@ const CriarCurso = () => {
       const usuarioId = userStr ? JSON.parse(userStr).id : '';
 
       const payload = {
+        titulo,
+        descricaoOriginal,
+        plataformaHospedagem,
+        categoriaId,
+        produtorId,
         usuarioId,
-        nome: novoProdutorNome,
-        nichoPrincipal: novoProdutorNicho,
-        linksSociais: novoProdutorLinks
+        promessaCursos: promessas
+          .filter(p => p.trim() !== '')
+          .map(p => ({ descricao: p }))
       };
 
       const response = await api.post('/Produtor', payload);
@@ -232,6 +256,41 @@ const CriarCurso = () => {
                 Novo
               </Button>
             </Box>
+            
+            {/* Seção Dinâmica de Promessas */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 3, mb: 1, color: '#475569' }}>
+              Promessas do Produtor (Ex: "Acesso Vitalício", "Suporte 24/7")
+            </Typography>
+            
+            {promessas.map((promessa, index) => (
+              <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 1.5 }}>
+                <TextField
+                  fullWidth
+                  label={`Promessa #${index + 1}`}
+                  variant="outlined"
+                  size="small"
+                  value={promessa}
+                  onChange={(e) => handlePromessaChange(index, e.target.value)}
+                />
+                <Button 
+                  variant="outlined" 
+                  color="error" 
+                  onClick={() => handleRemoverPromessa(index)}
+                  sx={{ height: 40 }}
+                >
+                  Remover
+                </Button>
+              </Box>
+            ))}
+            
+            <Button 
+              variant="outlined" 
+              color="secondary" 
+              onClick={handleAdicionarPromessa}
+              sx={{ mt: 1, mb: 2, borderStyle: 'dashed' }}
+            >
+              + Adicionar Outra Promessa
+            </Button>
 
             <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
               <Button variant="outlined" onClick={() => navigate('/dashboard')}>
