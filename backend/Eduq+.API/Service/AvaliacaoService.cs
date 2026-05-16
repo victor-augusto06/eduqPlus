@@ -20,6 +20,8 @@ namespace EduqPlus.API.Service {
             try 
             {
                 var avaliacaoExistente = await _context.Avaliacoes
+                    .Include(a => a.Curso)
+                        .ThenInclude(c => c.Avaliacoes)
                     .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (avaliacaoExistente == null)
@@ -29,6 +31,9 @@ namespace EduqPlus.API.Service {
                     throw new Exception("Você não tem permissão para excluir esta avaliação.");
 
                 _context.Avaliacoes.Remove(avaliacaoExistente);
+
+                avaliacaoExistente.Curso.AtualizarTrustScore();
+
                 await _context.SaveChangesAsync();
                 
                 return true;
@@ -43,6 +48,7 @@ namespace EduqPlus.API.Service {
         public async Task<AvaliacaoResponseDTO> AtualizarAvaliacaoAsync(Guid id, Guid usuarioId, AvaliacaoUpdateDTO avaliacaoDTO) {
             var avaliacaoExistente = await _context.Avaliacoes
                 .Include(a => a.Curso)
+                    .ThenInclude(c => c.Avaliacoes)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (avaliacaoExistente == null)
@@ -55,6 +61,7 @@ namespace EduqPlus.API.Service {
             avaliacaoExistente.NotaSuporte = avaliacaoDTO.NotaSuporte;
             avaliacaoExistente.Comentario = avaliacaoDTO.Comentario;
             avaliacaoExistente.UrlComprovante = avaliacaoDTO.UrlComprovante;
+            avaliacaoExistente.Curso.AtualizarTrustScore();
 
             await _context.SaveChangesAsync();
 
@@ -72,6 +79,13 @@ namespace EduqPlus.API.Service {
         }
 
         public async Task<AvaliacaoResponseDTO> CriarAvaliacaoAsync(AvaliacaoCreateDTO avaliacaoDTO) {
+            var curso = await _context.Cursos
+                .Include(c => c.Avaliacoes)
+                .FirstOrDefaultAsync(c => c.Id == avaliacaoDTO.CursoId);
+
+            if (curso == null)
+                throw new Exception("Curso não encontrado.");
+
             var novaAvaliacao = new Avaliacao {
                 Id = Guid.NewGuid(),
                 CursoId = avaliacaoDTO.CursoId,
@@ -86,6 +100,7 @@ namespace EduqPlus.API.Service {
             };
 
             _context.Avaliacoes.Add(novaAvaliacao);
+            curso.AtualizarTrustScore();
             await _context.SaveChangesAsync();
 
             await _cursoService.VerificarEAtualizarResumoIaAsync(novaAvaliacao.CursoId);

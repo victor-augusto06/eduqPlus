@@ -21,7 +21,7 @@ namespace EduqPlus.API.DTOs {
 
     public class CursoUpdateAdminDTO: CursoUpdateDTO {
         public EStatusAuditoria StatusAuditoria { get; set; }
-        public int? TrustScore { get; set; }
+        public double? TrustScore { get; set; }
         public string? ResumoReputacao { get; set; }
         public DateTime? DataUltimaAnaliseIa { get; set; }
     }
@@ -34,7 +34,7 @@ namespace EduqPlus.API.DTOs {
         public string DescricaoOriginal { get; set; } = string.Empty;
         public string Titulo { get; set; } = string.Empty;
         public string? PlataformaHospedagem { get; set; }
-        public int? TrustScore { get; set; }
+        public double? TrustScore { get; set; }
         public EStatusAuditoria StatusAuditoria {  get; set; }
         public string? ResumoReputacao { get; set; }
         public ICollection<PromessaCursoResponseDTO> PromessaCursos { get; set; } = new List<PromessaCursoResponseDTO>();

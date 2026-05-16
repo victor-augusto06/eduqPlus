@@ -35,7 +35,7 @@ public partial class Curso
 
     public EStatusAuditoria? StatusAuditoria { get; set; }
 
-    public int? TrustScore { get; set; }
+    public double? TrustScore { get; set; }
 
     public float[]? VetorSemantico { get; set; }
 
@@ -64,4 +64,13 @@ public partial class Curso
 
     [InverseProperty("Curso")]
     public virtual ICollection<PromessaCurso> PromessaCursos { get; set; } = new List<PromessaCurso>();
+
+    public void AtualizarTrustScore() {
+        if (Avaliacoes != null && Avaliacoes.Any()) {
+            double mediaGeral = Avaliacoes.Average(a => (a.NotaEntrega + a.NotaSuporte) / 2.0);
+            TrustScore = (int)Math.Round(mediaGeral, MidpointRounding.AwayFromZero);
+        } else {
+            TrustScore = 0.0;
+        }
+    }
 }

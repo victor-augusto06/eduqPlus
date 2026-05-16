@@ -33,7 +33,7 @@ CREATE TABLE Curso (
     DescricaoOriginal TEXT,
     PlataformaHospedagem VARCHAR(100),
     StatusAuditoria VARCHAR(50) NOT NULL DEFAULT 'EmAnalise',
-    TrustScore INT DEFAULT 0,
+	TrustScore DOUBLE DEFAULT 0.0,
     ResumoReputacao TEXT,
     DataUltimaAnaliseIA DATETIME NULL,
     VetorSemantico JSON NULL,

@@ -94,7 +94,7 @@ public partial class EduqPlusContext : DbContext {
                 .HasDefaultValue(EStatusAuditoria.NaoAuditado)
                 .HasSentinel(EStatusAuditoria.NaoAuditado);
 
-            entity.Property(e => e.TrustScore).HasDefaultValue(0);
+            entity.Property(e => e.TrustScore).HasDefaultValue(0.0);
 
             entity.Property(e => e.VetorSemantico)
                 .HasConversion(

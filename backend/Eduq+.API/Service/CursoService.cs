@@ -26,9 +26,51 @@ namespace EduqPlus.API.Services {
                 .Take(tamanho)
                 .Select(c => new CursoResponseDTO {
                     Id = c.Id,
+                    CategoriaId = c.CategoriaId,
+                    ProdutorId = c.ProdutorId,
+                    UsuarioId = c.UsuarioId,
+                    DescricaoOriginal = c.DescricaoOriginal ?? string.Empty,
                     Titulo = c.Titulo,
+                    PlataformaHospedagem = c.PlataformaHospedagem,
                     TrustScore = c.TrustScore,
-                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
+                    ResumoReputacao = c.ResumoReputacao,
+                    PromessaCursos = c.PromessaCursos.Select(p => new PromessaCursoResponseDTO {
+                        Id = p.Id,
+                        CursoId = p.CursoId,
+                        Descricao = p.Descricao,
+                        CumpridaNaAuditoria = p.CumpridaNaAuditoria
+                    }).ToList(),
+                    Auditoria = c.Auditoria.Select(a => new AuditoriaResponseDTO {
+                        Id = a.Id,
+                        CursoId = a.CursoId,
+                        AuditorId = a.AuditorId,
+                        NomeAuditor = a.Auditor.Nome ?? string.Empty,
+                        TituloCurso = c.Titulo,
+                        DataAuditoria = a.DataAuditoria,
+                        Resultado = a.Resultado,
+                        ObservacaoAuditor = a.ObservacaoAuditor
+                    }).ToList(),
+                    Avaliacoes = c.Avaliacoes.Select(av => new AvaliacaoResponseDTO {
+                        Id = av.Id,
+                        CursoId = av.CursoId,
+                        UsuarioId = av.UsuarioId,
+                        NotaEntrega = av.NotaEntrega,
+                        NotaSuporte = av.NotaSuporte,
+                        Comentario = av.Comentario,
+                        Data = av.Data,
+                        StatusComprovante = av.StatusComprovante,
+                        IsCompraVerificada = av.IsCompraVerificada,
+                    }).ToList(),
+                    Denuncia = c.Denuncia.Select(d => new DenunciaResponseDTO {
+                        Id = d.Id,
+                        CursoId = d.CursoId,
+                        UsuarioId = d.UsuarioId,
+                        Data = d.Data,
+                        Categoria = d.Categoria,
+                        RelatoDetalhado = d.RelatoDetalhado,
+                        Status = d.Status
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -43,7 +85,11 @@ namespace EduqPlus.API.Services {
         public async Task<CursoResponseDTO> CriarCursoAsync(CursoCreateDTO cursoDto) {
             var cursoId = Guid.NewGuid();
 
-            string textoParaVetor = $"{cursoDto.Titulo}. {cursoDto.DescricaoOriginal}";
+            var categoria = await _context.Categorias.FindAsync(cursoDto.CategoriaId);
+            string nomeCategoria = categoria?.Nome ?? "Geral";
+
+            string textoParaVetor = $"{cursoDto.Titulo}. {cursoDto.DescricaoOriginal}. {nomeCategoria}";
+
             var vetor = await _iaService.GerarEmbeddingAsync(textoParaVetor);
 
             var novoCurso = new Curso {
@@ -586,17 +632,23 @@ namespace EduqPlus.API.Services {
 
                 double scoreFinal = (similiaridade * 0.7) + ((mediaNotas / 5.0) * 0.3);
 
+                bool contemTermoTextual = curso.Titulo.Contains(termoBusca, StringComparison.OrdinalIgnoreCase) ||
+                             (curso.DescricaoOriginal != null && curso.DescricaoOriginal.Contains(termoBusca, StringComparison.OrdinalIgnoreCase));
+
+                Console.WriteLine($"[DEBUG IA] Curso: {curso.Titulo} | Similaridade: {similiaridade} | Intenção Qualidade: {usuarioBuscaQualidade}");
+
                 return new {
                     Curso = curso,
                     ScoreFinal = scoreFinal,
                     Similaridade = similiaridade,
-                    MediaReal = mediaNotas
+                    MediaReal = mediaNotas,
+                    PassouNoFiltroTextual = contemTermoTextual
                 };
             })
-                .Where(res => res.Similaridade > 0.75 &&
+                .Where(res => (res.Similaridade > 0.60 || res.PassouNoFiltroTextual) &&
                       (!usuarioBuscaQualidade || (res.MediaReal >= 3.0 && res.Curso.Avaliacoes.Count > 0)))
-                .OrderByDescending(res => res.ScoreFinal)
-                .ThenByDescending(res => res.Curso.TrustScore)
+                .OrderByDescending(res => res.PassouNoFiltroTextual)
+                .ThenByDescending(res => res.ScoreFinal)
                 .Take(10)
                 .ToList();
 

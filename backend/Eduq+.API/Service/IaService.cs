@@ -39,8 +39,8 @@ public class IaService : IIaService {
             "Analise se o usuário quer filtragem por QUALIDADE (notas, melhores, reputação). " +
             "IMPORTANTE: Se houver um termo de qualidade (bom, melhor, nota, top), a resposta deve ser SIM, " +
             "mesmo que a frase comece com 'me traga' ou 'quais'. " +
-            "Exemplos SIM: 'me traga os melhores de investimentos', 'cursos com boas notas', 'quais são os mais confiáveis'. " +
-            "Exemplos NAO: 'me traga cursos de investimentos', 'quais cursos de C# existem', 'lista de investimentos'.");
+            "Exemplos SIM: 'me traga os melhores de ...', 'cursos com boas notas', 'quais são os mais confiáveis'. " +
+            "Exemplos NAO: 'me traga cursos de ...', 'quais cursos de C# existem', 'lista de ...'.");
 
         chatHistory.AddUserMessage($"O usuário busca explicitamente por qualidade ou confiança nesta busca: \"{query}\"?");
 
