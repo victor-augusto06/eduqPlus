@@ -58,7 +58,7 @@ namespace EduqPlus.API.Controllers {
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Criar([FromBody] AvaliacaoCreateDTO dto) {
+        public async Task<IActionResult> Criar([FromForm] AvaliacaoCreateDTO dto) {
             try {
                 var usuarioIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 dto.UsuarioId = Guid.Parse(usuarioIdToken!);

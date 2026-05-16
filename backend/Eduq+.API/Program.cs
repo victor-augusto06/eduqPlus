@@ -122,6 +122,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("EduqPolicy");
 app.UseAuthentication();
+app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -10,10 +10,12 @@ namespace EduqPlus.API.Service {
 
         private readonly EduqPlusContext _context;
         private readonly ICursoService _cursoService;
+        private readonly IWebHostEnvironment _environment;
 
-        public AvaliacaoService(EduqPlusContext context, ICursoService cursoService) {
+        public AvaliacaoService(EduqPlusContext context, ICursoService cursoService, IWebHostEnvironment environment) {
             _context = context;
             _cursoService = cursoService;
+            _environment = environment;
         }
 
         public async Task<bool> ExcluirAvaliacaoAsync(Guid id, Guid usuarioId) {
@@ -29,6 +31,16 @@ namespace EduqPlus.API.Service {
 
                 if (avaliacaoExistente.UsuarioId != usuarioId)
                     throw new Exception("Você não tem permissão para excluir esta avaliação.");
+
+                if (!string.IsNullOrEmpty(avaliacaoExistente.UrlComprovante)) {
+
+                    string caminhoRelativo = avaliacaoExistente.UrlComprovante.TrimStart('/');
+                    string caminhoFisicoCompleto = Path.Combine(_environment.WebRootPath, caminhoRelativo);
+
+                    if (System.IO.File.Exists(caminhoFisicoCompleto)) {
+                        System.IO.File.Delete(caminhoFisicoCompleto);
+                    }
+                }
 
                 _context.Avaliacoes.Remove(avaliacaoExistente);
 
@@ -86,6 +98,34 @@ namespace EduqPlus.API.Service {
             if (curso == null)
                 throw new Exception("Curso não encontrado.");
 
+            string? urlCaminhoArquivo = null;
+
+            if (avaliacaoDTO.UrlComprovante != null && avaliacaoDTO.UrlComprovante.Length > 0) {
+                var extensoesPermitidas = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                var extensao = Path.GetExtension(avaliacaoDTO.UrlComprovante.FileName).ToLowerInvariant();
+
+                if (!extensoesPermitidas.Contains(extensao))
+                    throw new Exception("Formato de arquivo não permitido. Envie apenas PDF, JPG ou PNG.");
+
+                if (avaliacaoDTO.UrlComprovante.Length > 5 * 1024 * 1024) 
+                    throw new Exception("O arquivo excede o tamanho máximo permitido de 5MB.");
+
+                string nomeUnicoArquivo = Guid.NewGuid().ToString() + Path.GetExtension(avaliacaoDTO.UrlComprovante.FileName);
+
+                string pastaDestino = Path.Combine(_environment.WebRootPath, "uploads", "comprovantes");
+
+                if (!Directory.Exists(pastaDestino))
+                    Directory.CreateDirectory(pastaDestino);
+
+                string caminhoCompletoFisico = Path.Combine(pastaDestino, nomeUnicoArquivo);
+
+                using (var stream = new FileStream(caminhoCompletoFisico, FileMode.Create)) {
+                    await avaliacaoDTO.UrlComprovante.CopyToAsync(stream);
+                }
+
+                urlCaminhoArquivo = $"/uploads/comprovantes/{nomeUnicoArquivo}";
+            }
+
             var novaAvaliacao = new Avaliacao {
                 Id = Guid.NewGuid(),
                 CursoId = avaliacaoDTO.CursoId,
@@ -93,7 +133,7 @@ namespace EduqPlus.API.Service {
                 NotaEntrega = avaliacaoDTO.NotaEntrega,
                 NotaSuporte = avaliacaoDTO.NotaSuporte,
                 Comentario = avaliacaoDTO.Comentario,
-                UrlComprovante = avaliacaoDTO.UrlComprovante,
+                UrlComprovante = urlCaminhoArquivo,
                 StatusComprovante = EStatusComprovante.Pendente,
                 Data = DateTime.Now,
                 IsCompraVerificada = false
