@@ -9,6 +9,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import api from '../services/api';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 import NovaAvaliacaoDialog from './NovaAvaliacaoDialog';
+import NovaDenunciaDialog from './NovaDenunciaDialog';
 
 const CursoDetalhes = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,10 +18,11 @@ const CursoDetalhes = () => {
   const [curso, setCurso] = useState<Curso | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalAvaliacaoAberta, setModalAvaliacaoAberta] = useState(false);
+  const [modalDenunciaAberta, setModalDenunciaAberta] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [nomeProdutor, setNomeProdutor] = useState<string>('Carregando...');
 
-const carregarDetalhesCurso = async () => {
+  const carregarDetalhesCurso = async () => {
     setLoading(true);
     try {
       const response = await api.get(`/Curso/${id}`);
@@ -84,8 +86,37 @@ const carregarDetalhesCurso = async () => {
     }
   };
 
-  const renderResumoInteligente = (texto: string) => {
+  // Mapeia o status da denúncia vindo do backend para a tag visual
+  const getDenunciaStatusChip = (status: string | number) => {
+    const statusStr = String(status).toLowerCase();
+    switch (statusStr) {
+      case 'resolvida':
+      case '2':
+        return { label: 'Resolvida', color: 'success' as const };
+      case 'rejeitada':
+      case 'arquivada':
+      case '3':
+        return { label: 'Arquivada', color: 'error' as const };
+      case 'emanalise':
+      case '1':
+      default:
+        return { label: 'Em Análise', color: 'warning' as const };
+    }
+  };
 
+  // Converte o valor numérico do Enum de denúncia para texto legível
+  const getDenunciaCategoriaLabel = (cat: string | number) => {
+    switch (Number(cat)) {
+      case 1: return 'Conteúdo Enganoso / Propaganda Falsa';
+      case 2: return 'Plágio / Direitos Autorais';
+      case 3: return 'Qualidade Baixa / Inassistível';
+      case 4: return 'Conteúdo Ofensivo / Inadequado';
+      case 5: return 'Outros Motivos';
+      default: return String(cat); 
+    }
+  };
+
+  const renderResumoInteligente = (texto: string) => {
     const partes = texto.split(/Pontos fortes:|Pontos de atenção:/i);
     const resumoGeral = partes[0] ? partes[0].replace(/Resumo:/i, '').trim() : texto;
     
@@ -248,6 +279,46 @@ const carregarDetalhesCurso = async () => {
                 Este curso ainda não possui avaliações.
               </Typography>
             )}
+
+            {/* NOVA SEÇÃO: Histórico de Denúncias */}
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, mt: 6, color: '#b91c1c' }}>
+              Denúncias Registradas
+            </Typography>
+
+            {curso.denuncia && curso.denuncia.length > 0 ? (
+              curso.denuncia.map((denuncia: any) => (
+                <Card key={denuncia.id} sx={{ mb: 2, borderRadius: 2, borderLeft: '4px solid #b91c1c' }} elevation={1}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                      <Chip 
+                        size="small" 
+                        label={getDenunciaCategoriaLabel(denuncia.categoria)} 
+                        sx={{ fontWeight: 'bold', backgroundColor: '#ffeeec', color: '#b91c1c' }} 
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(denuncia.data).toLocaleDateString('pt-BR')}
+                      </Typography>
+                      {denuncia.status && (
+                        <Chip 
+                          size="small" 
+                          label={getDenunciaStatusChip(denuncia.status).label} 
+                          color={getDenunciaStatusChip(denuncia.status).color} 
+                          variant="outlined" 
+                          sx={{ ml: 'auto' }} 
+                        />
+                      )}
+                    </Box>
+                    <Typography variant="body2" color="text.primary" sx={{ mt: 2, pl: 0.5, lineHeight: 1.6 }}>
+                      {denuncia.relatoDetalhado}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Typography variant="body1" color="text.secondary">
+                Nenhuma denúncia registrada para este curso.
+              </Typography>
+            )}
           </Grid>
 
           {/* Coluna Lateral: Ações e Promessas */}
@@ -258,15 +329,28 @@ const carregarDetalhesCurso = async () => {
               </Typography>
 
               {isLoggedIn ? (
-                <Button 
-                  variant="contained" 
-                  size="large" 
-                  fullWidth 
-                  onClick={() => setModalAvaliacaoAberta(true)}
-                  sx={{ py: 1.5, fontWeight: 'bold' }}
-                >
-                  Avaliar este Curso
-                </Button>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Button 
+                    variant="contained" 
+                    size="large" 
+                    fullWidth 
+                    onClick={() => setModalAvaliacaoAberta(true)}
+                    sx={{ py: 1.5, fontWeight: 'bold' }}
+                  >
+                    Avaliar este Curso
+                  </Button>
+                  
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    size="medium" 
+                    fullWidth 
+                    onClick={() => setModalDenunciaAberta(true)}
+                    sx={{ fontWeight: 'bold' }}
+                  >
+                    Denunciar Curso
+                  </Button>
+                </Box>
               ) : (
                 <Button 
                   variant="outlined" 
@@ -274,7 +358,7 @@ const carregarDetalhesCurso = async () => {
                   fullWidth 
                   onClick={() => navigate('/login')}
                 >
-                  Faça login para avaliar
+                  Faça login para interagir
                 </Button>
               )}
 
@@ -303,6 +387,14 @@ const carregarDetalhesCurso = async () => {
       <NovaAvaliacaoDialog 
         open={modalAvaliacaoAberta}
         onClose={() => setModalAvaliacaoAberta(false)}
+        cursoId={curso.id}
+        onSuccess={carregarDetalhesCurso} 
+      />
+
+      {/* Modal de Denúncia */}
+      <NovaDenunciaDialog 
+        open={modalDenunciaAberta}
+        onClose={() => setModalDenunciaAberta(false)}
         cursoId={curso.id}
         onSuccess={carregarDetalhesCurso} 
       />
