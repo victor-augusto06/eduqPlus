@@ -341,7 +341,7 @@ const Dashboard = () => {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="O que você quer aprender? (ex: cursos de investimentos bem avaliados)"
+            placeholder="Para uma melhor experiência siga o exemplo (ex: Me traga os cursos de investimentos bem avaliados)"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             onKeyPress={(e) => {

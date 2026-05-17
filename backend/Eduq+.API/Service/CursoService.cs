@@ -660,7 +660,7 @@ namespace EduqPlus.API.Services {
                     PassouNoFiltroTextual = contemTermoTextual
                 };
             })
-                .Where(res => (res.Similaridade > 0.60 || res.PassouNoFiltroTextual) &&
+                .Where(res => (res.Similaridade > 0.73 || res.PassouNoFiltroTextual) &&
                       (!usuarioBuscaQualidade || (res.MediaReal >= 3.0 && res.Curso.Avaliacoes.Count > 0)))
                 .OrderByDescending(res => res.PassouNoFiltroTextual)
                 .ThenByDescending(res => res.ScoreFinal)

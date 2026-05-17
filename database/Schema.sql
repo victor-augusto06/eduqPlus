@@ -32,8 +32,8 @@ CREATE TABLE Curso (
     Titulo VARCHAR(255) NOT NULL,
     DescricaoOriginal TEXT,
     PlataformaHospedagem VARCHAR(100),
-    StatusAuditoria VARCHAR(50) NOT NULL DEFAULT 'EmAnalise',
-	TrustScore DOUBLE DEFAULT 0.0,
+    StatusAuditoria VARCHAR(50) NOT NULL DEFAULT 'NaoAuditado',
+    TrustScore DOUBLE DEFAULT 0.0,
     ResumoReputacao TEXT,
     DataUltimaAnaliseIA DATETIME NULL,
     VetorSemantico JSON NULL,
@@ -41,7 +41,6 @@ CREATE TABLE Curso (
     CONSTRAINT FK_Curso_Produtor FOREIGN KEY (ProdutorId) REFERENCES Produtor(Id) ON DELETE CASCADE,
     CONSTRAINT FK_Curso_Categoria FOREIGN KEY (CategoriaId) REFERENCES Categorias(Id) ON DELETE RESTRICT
 );
-
 CREATE TABLE PromessaCurso (
     Id CHAR(36) PRIMARY KEY,
     CursoId CHAR(36) NOT NULL,
