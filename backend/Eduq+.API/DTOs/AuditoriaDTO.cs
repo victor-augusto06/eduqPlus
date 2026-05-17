@@ -11,6 +11,7 @@ namespace EduqPlus.API.DTOs {
     }
 
     public class AuditoriaUpdateDTO {
+        public string CriterioAnalisado { get; set; } = string.Empty;
         public EStatusAuditoria Resultado { get; set; }
         public string? ObservacaoAuditor { get; set; }
     }
@@ -21,6 +22,7 @@ namespace EduqPlus.API.DTOs {
         public Guid AuditorId { get; set; }
         public string NomeAuditor { get; set; } = string.Empty;
         public string TituloCurso { get; set; } = string.Empty;
+        public string CriterioAnalisado { get; set; } = string.Empty;
         public DateTime DataAuditoria { get; set; }
         public EStatusAuditoria Resultado { get; set; }
         public string? ObservacaoAuditor { get; set; }

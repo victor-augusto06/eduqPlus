@@ -20,6 +20,7 @@ namespace EduqPlus.API.Service {
                     Id = c.Id,
                     CursoId = c.CursoId,
                     AuditorId = c.AuditorId,
+                    CriterioAnalisado = c.CriterioAnalisado,
                     NomeAuditor = c.Auditor.Nome ?? string.Empty,
                     TituloCurso = c.Curso.Titulo ?? string.Empty,
                     DataAuditoria = c.DataAuditoria,
@@ -37,7 +38,8 @@ namespace EduqPlus.API.Service {
                 .Select(c => new AuditoriaResponseDTO {
                     Id = c.Id,
                     CursoId = c.CursoId,
-                    AuditorId = c.AuditorId, 
+                    AuditorId = c.AuditorId,
+                    CriterioAnalisado = c.CriterioAnalisado,
                     NomeAuditor = c.Auditor.Nome ?? string.Empty,
                     TituloCurso = c.Curso.Titulo ?? string.Empty,
                     DataAuditoria = c.DataAuditoria,
@@ -63,6 +65,7 @@ namespace EduqPlus.API.Service {
                     Id = a.Id,
                     CursoId = a.CursoId,
                     AuditorId = a.AuditorId,
+                    CriterioAnalisado = a.CriterioAnalisado,
                     NomeAuditor = a.Auditor.Nome ?? string.Empty,
                     TituloCurso = a.Curso.Titulo ?? string.Empty, 
                     DataAuditoria = a.DataAuditoria,
@@ -108,6 +111,7 @@ namespace EduqPlus.API.Service {
             return new AuditoriaResponseDTO {
                 Id = novaAuditoria.Id,
                 CursoId = novaAuditoria.CursoId,
+                CriterioAnalisado = novaAuditoria.CriterioAnalisado,
                 AuditorId = novaAuditoria.AuditorId,
                 NomeAuditor = infoRelacionada?.NomeAuditor ?? "Sistema",
                 TituloCurso = infoRelacionada?.Titulo ?? string.Empty,
@@ -127,6 +131,7 @@ namespace EduqPlus.API.Service {
                 throw new Exception("Auditoria não encontrada.");
 
             auditoriaExistente.AuditorId = auditorId;
+            auditoriaExistente.CriterioAnalisado = auditoriaDto.CriterioAnalisado;
             auditoriaExistente.Resultado = auditoriaDto.Resultado;
             auditoriaExistente.ObservacaoAuditor = auditoriaDto.ObservacaoAuditor;
 
@@ -136,6 +141,7 @@ namespace EduqPlus.API.Service {
                 Id = auditoriaExistente.Id,
                 CursoId = auditoriaExistente.CursoId,
                 AuditorId = auditoriaExistente.AuditorId,
+                CriterioAnalisado = auditoriaExistente.CriterioAnalisado,
                 NomeAuditor = _context.Usuarios
                     .Where(u => u.Id == auditorId)
                     .Select(u => u.Nome)

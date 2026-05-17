@@ -2,7 +2,7 @@ import { EStatusAuditoria } from '../types/Curso';
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, TextField, Button, Paper, MenuItem, 
-  CircularProgress, Alert, Grid, Divider
+  CircularProgress, Alert, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -21,6 +21,7 @@ const EditarCurso = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
 
   const [titulo, setTitulo] = useState('');
   const [descricaoOriginal, setDescricaoOriginal] = useState('');
@@ -33,6 +34,14 @@ const EditarCurso = () => {
   const [trustScore, setTrustScore] = useState(0);
   const [resumoReputacao, setResumoReputacao] = useState('');
 
+  // Estados da Auditoria
+  const [temAuditoria, setTemAuditoria] = useState(false);
+  const [auditoriaRealizada, setAuditoriaRealizada] = useState<any>(null);
+  const [novoResultadoAuditoria, setNovoResultadoAuditoria] = useState('');
+  const [novaObservacaoAuditoria, setNovaObservacaoAuditoria] = useState('');
+  const [novoCriterioAnalisado, setNovoCriterioAnalisado] = useState('');
+  const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+
   useEffect(() => {
     const carregarDados = async () => {
       setLoading(true);
@@ -41,6 +50,7 @@ const EditarCurso = () => {
         if (userStr) {
           const user = JSON.parse(userStr);
           setIsAdmin(user.role === 2 || user.Role === 2);
+          setCurrentUserId(user.id || user.Id || '');
         }
 
         const [catRes, cursoRes] = await Promise.all([
@@ -60,6 +70,13 @@ const EditarCurso = () => {
         setStatusAuditoria(curso.statusAuditoria);
         setTrustScore(curso.trustScore);
         setResumoReputacao(curso.resumoReputacao || '');
+
+        // Carrega os dados de auditoria se já existirem
+        if (curso.auditoria && curso.auditoria.length > 0) {
+          setTemAuditoria(true);
+          setAuditoriaRealizada(curso.auditoria[0]);
+          setNovoCriterioAnalisado(curso.auditoria[0].criterioAnalisado || '');
+        }
 
       } catch (err) {
         setError('Erro ao carregar dados do curso para edição.');
@@ -81,6 +98,73 @@ const EditarCurso = () => {
   
   const handleRemoverPromessa = (index: number) => {
     setPromessas(promessas.filter((_, i) => i !== index));
+  };
+
+  const handleIniciarEdicaoAuditoria = () => {
+    const resultadoTexto = auditoriaRealizada.resultado === 2 || auditoriaRealizada.resultado === 'Aprovado' ? 'Aprovado' : 'Reprovado';
+    setNovoResultadoAuditoria(resultadoTexto);
+    setNovaObservacaoAuditoria(auditoriaRealizada.observacaoAuditor || '');
+    setNovoCriterioAnalisado(auditoriaRealizada.criterioAnalisado || '');
+    setTemAuditoria(false); 
+  };
+
+  const handleSalvarAuditoria = async () => {
+    if (!novoResultadoAuditoria || !novaObservacaoAuditoria) {
+      alert('Preencha o resultado e a observação da auditoria.');
+      return;
+    }
+
+    if (!auditoriaRealizada?.id && !novoCriterioAnalisado.trim()) {
+      alert('Preencha o critério analisado.');
+      return;
+    }
+    
+    try {
+      const userStr = localStorage.getItem('@EduqPlus:user');
+      if (!userStr) {
+        alert('Sessão inválida ou expirada. Faça login novamente.');
+        return;
+      }
+
+      const user = JSON.parse(userStr);
+      const auditorId = user.id;
+      const resultadoEnum = novoResultadoAuditoria === 'Aprovado' ? EStatusAuditoria.Aprovado : EStatusAuditoria.Reprovado;
+
+      // Se já possui uma auditoria, faz PUT (AuditoriaUpdateDTO). Caso contrário, POST (AuditoriaCreateDTO).
+      if (auditoriaRealizada?.id) {
+        await api.put(`/Auditoria/${auditoriaRealizada.id}`, {
+          resultado: resultadoEnum,
+          observacaoAuditor: novaObservacaoAuditoria
+        });
+      } else {
+        await api.post('/Auditoria', {
+          cursoId: id,
+          auditorId: auditorId,
+          criterioAnalisado: novoCriterioAnalisado,
+          resultado: resultadoEnum,
+          observacaoAuditor: novaObservacaoAuditoria
+        });
+      }
+
+      const statusAtualizado = novoResultadoAuditoria === 'Aprovado' ? EStatusAuditoria.Aprovado : EStatusAuditoria.Reprovado;
+      setStatusAuditoria(statusAtualizado);
+
+      setOpenSuccessDialog(true);
+      setTemAuditoria(true);
+      
+      setAuditoriaRealizada({
+        id: auditoriaRealizada?.id || null, 
+        auditorId: auditorId,
+        nomeAuditor: user.nome,
+        dataAuditoria: new Date().toISOString(),
+        resultado: novoResultadoAuditoria,
+        observacaoAuditor: novaObservacaoAuditoria,
+        criterioAnalisado: novoCriterioAnalisado
+      });
+
+    } catch (err: any) {
+      setError(err.response?.data?.mensagem || 'Erro ao registrar ou atualizar a auditoria.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,7 +270,7 @@ const EditarCurso = () => {
                       <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           select fullWidth label="Status da Auditoria" size="small"
-                          value={statusAuditoria}
+                          value={statusAuditoria} 
                           onChange={(e) => setStatusAuditoria(Number(e.target.value))}
                         >
                           <MenuItem value={1}>Não Auditado</MenuItem>
@@ -206,6 +290,88 @@ const EditarCurso = () => {
                           fullWidth label="Resumo da Reputação (IA)" multiline rows={2} size="small"
                           value={resumoReputacao} onChange={(e) => setResumoReputacao(e.target.value)}
                         />
+                      </Grid>
+
+                      {/* Registro de Histórico de Auditoria */}
+                      <Grid size={{ xs: 12 }}>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: '#1976d2' }}>
+                          Registro de Auditoria
+                        </Typography>
+
+                        {temAuditoria && auditoriaRealizada ? (
+                          <Box sx={{ p: 2, backgroundColor: '#e8f5e9', borderRadius: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                              Auditoria já realizada por: {auditoriaRealizada.nomeAuditor}
+                            </Typography>
+                            <Typography variant="body2">
+                              Data: {new Date(auditoriaRealizada.dataAuditoria).toLocaleDateString('pt-BR')}
+                            </Typography>
+                            <Typography variant="body2">
+                              Resultado: {auditoriaRealizada.resultado === 2 || auditoriaRealizada.resultado === 'Aprovado' ? 'Aprovado' : 'Reprovado'}
+                            </Typography>
+                            {auditoriaRealizada.criterioAnalisado && (
+                              <Typography variant="body2">
+                                <strong>Critério Analisado:</strong> {auditoriaRealizada.criterioAnalisado}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              <strong>Observação:</strong> {auditoriaRealizada.observacaoAuditor}
+                            </Typography>
+                            
+                            {/* Botão para Editar visível apenas se for o mesmo criador */}
+                            {auditoriaRealizada.auditorId === currentUserId && (
+                              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                <Button 
+                                  type="button" 
+                                  variant="outlined" 
+                                  color="primary" 
+                                  size="small" 
+                                  onClick={handleIniciarEdicaoAuditoria}
+                                >
+                                  Editar Auditoria
+                                </Button>
+                              </Box>
+                            )}
+                          </Box>
+                        ) : (
+                          <Grid container spacing={2}>
+                            <Grid size={{ xs: 12 }}>
+                              <TextField
+                                fullWidth 
+                                label="Critério Analisado" 
+                                size="small"
+                                value={novoCriterioAnalisado} 
+                                onChange={(e) => setNovoCriterioAnalisado(e.target.value)}
+                                disabled={!!auditoriaRealizada?.id} // Desabilita se já existir um ID (Modo Edição/PUT)
+                                required={!auditoriaRealizada?.id}
+                                helperText={!!auditoriaRealizada?.id ? "O critério não pode ser alterado após o registro." : ""}
+                              />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 4 }}>
+                              <TextField
+                                select fullWidth label="Resultado" size="small"
+                                value={novoResultadoAuditoria} 
+                                onChange={(e) => setNovoResultadoAuditoria(e.target.value)}
+                              >
+                                <MenuItem value="Aprovado">Aprovado</MenuItem>
+                                <MenuItem value="Reprovado">Reprovado</MenuItem>
+                              </TextField>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 8 }}>
+                              <TextField
+                                fullWidth label="Observações da Auditoria" size="small"
+                                value={novaObservacaoAuditoria} 
+                                onChange={(e) => setNovaObservacaoAuditoria(e.target.value)}
+                              />
+                            </Grid>
+                            <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                              <Button type="button" variant="contained" color="success" onClick={handleSalvarAuditoria} size="small">
+                                {auditoriaRealizada?.id ? 'Atualizar Auditoria' : 'Registrar Auditoria'}
+                              </Button>
+                            </Grid>
+                          </Grid>
+                        )}
                       </Grid>
                     </Grid>
                   </Box>
@@ -244,6 +410,20 @@ const EditarCurso = () => {
           </Box>
         </Paper>
       </Container>
+
+      <Dialog open={openSuccessDialog} onClose={() => setOpenSuccessDialog(false)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 'bold', color: '#2e7d32' }}>Sucesso!</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            A auditoria do curso foi salva com sucesso no sistema.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="contained" color="success" onClick={() => setOpenSuccessDialog(false)}>
+            Entendido
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
