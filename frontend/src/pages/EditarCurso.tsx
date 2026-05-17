@@ -343,7 +343,6 @@ const EditarCurso = () => {
                                 size="small"
                                 value={novoCriterioAnalisado} 
                                 onChange={(e) => setNovoCriterioAnalisado(e.target.value)}
-                                disabled={!!auditoriaRealizada?.id} // Desabilita se já existir um ID (Modo Edição/PUT)
                                 required={!auditoriaRealizada?.id}
                                 helperText={!!auditoriaRealizada?.id ? "O critério não pode ser alterado após o registro." : ""}
                               />

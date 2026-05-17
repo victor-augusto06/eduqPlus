@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, Button, Paper, CircularProgress, 
-  Grid, Card, CardContent, Chip, Divider, AppBar, Toolbar, IconButton, Rating, Avatar
+  Grid, Card, CardContent, Chip, Divider, AppBar, Toolbar, IconButton, Rating, Avatar,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import api from '../services/api';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 import NovaAvaliacaoDialog from './NovaAvaliacaoDialog';
@@ -20,7 +22,30 @@ const CursoDetalhes = () => {
   const [modalAvaliacaoAberta, setModalAvaliacaoAberta] = useState(false);
   const [modalDenunciaAberta, setModalDenunciaAberta] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [nomeProdutor, setNomeProdutor] = useState<string>('Carregando...');
+  const [produtorInfo, setProdutorInfo] = useState<{nome: string, nicho?: string, links?: string}>({ nome: 'Carregando...' });
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
+
+  const [openEditAvaliacao, setOpenEditAvaliacao] = useState(false);
+  const [selectedAvaliacaoId, setSelectedAvaliacaoId] = useState('');
+  const [notaEntrega, setNotaEntrega] = useState(0);
+  const [notaSuporte, setNotaSuporte] = useState(0);
+  const [comentarioAvaliacao, setComentarioAvaliacao] = useState('');
+  const [statusComprovanteAvaliacao, setStatusComprovanteAvaliacao] = useState<number | string>(1);
+  const [urlComprovante, setUrlComprovante] = useState('');
+
+  const [openDeleteAvaliacaoDialog, setOpenDeleteAvaliacaoDialog] = useState(false);
+  const [avaliacaoIdParaExcluir, setAvaliacaoIdParaExcluir] = useState('');
+
+  const [openEditDenuncia, setOpenEditDenuncia] = useState(false);
+  const [selectedDenunciaId, setSelectedDenunciaId] = useState('');
+  const [relatoDetalhado, setRelatoDetalhado] = useState('');
+  const [categoriaDenuncia, setCategoriaDenuncia] = useState<number | string>('');
+  const [statusDenuncia, setStatusDenuncia] = useState<number | string>(1);
+
+  const [openDeleteDenunciaDialog, setOpenDeleteDenunciaDialog] = useState(false);
+  const [denunciaIdParaExcluir, setDenunciaIdParaExcluir] = useState('');
 
   const carregarDetalhesCurso = async () => {
     setLoading(true);
@@ -31,10 +56,14 @@ const CursoDetalhes = () => {
 
       try {
         const prodResponse = await api.get(`/Produtor/${dadosCurso.produtorId}`);
-        setNomeProdutor(prodResponse.data.nome);
+        setProdutorInfo({
+          nome: prodResponse.data.nome,
+          nicho: prodResponse.data.nichoPrincipal,
+          links: prodResponse.data.linksSociais
+        });
       } catch (prodError) {
         console.error("Erro ao carregar produtor", prodError);
-        setNomeProdutor('Produtor Desconhecido');
+        setProdutorInfo({ nome: 'Produtor Desconhecido' });
       }
 
     } catch (error) {
@@ -51,7 +80,112 @@ const CursoDetalhes = () => {
     if (token) {
       setIsLoggedIn(true);
     }
+
+    const userStr = localStorage.getItem('@EduqPlus:user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setIsAdmin(user.role === 2 || user.Role === 2);
+      setCurrentUserId(user.id || user.Id || '');
+    }
   }, [id]);
+
+  // --- AÇÕES DE AVALIAÇÃO ---
+  const handleIniciarEdicaoAvaliacao = (av: any) => {
+    setSelectedAvaliacaoId(av.id);
+    setNotaEntrega(av.notaEntrega);
+    setNotaSuporte(av.notaSuporte);
+    setComentarioAvaliacao(av.comentario || '');
+    setStatusComprovanteAvaliacao(av.statusComprovante || 1);
+    setUrlComprovante(av.comprovanteUrl || av.caminhoComprovante || av.urlComprovante || ''); // Ajuste aqui para a propriedade correta do seu backend
+    setOpenEditAvaliacao(true);
+  };
+
+  const handleSalvarEdicaoAvaliacao = async () => {
+    try {
+      const payload: any = {
+        notaEntrega,
+        notaSuporte,
+        comentario: comentarioAvaliacao
+      };
+
+      if (isAdmin) {
+        payload.statusComprovante = Number(statusComprovanteAvaliacao);
+      }
+
+      await api.put(`/Avaliacao/${selectedAvaliacaoId}`, payload);
+      setOpenEditAvaliacao(false);
+      carregarDetalhesCurso();
+    } catch (err) {
+      console.error('Erro ao editar avaliação.', err);
+    }
+  };
+
+  const handleIniciarExcluirAvaliacao = (avaliacaoId: string) => {
+    setAvaliacaoIdParaExcluir(avaliacaoId);
+    setOpenDeleteAvaliacaoDialog(true);
+  };
+
+  const handleConfirmarExcluirAvaliacao = async () => {
+    try {
+      await api.delete(`/Avaliacao/${avaliacaoIdParaExcluir}`);
+      setOpenDeleteAvaliacaoDialog(false);
+      setAvaliacaoIdParaExcluir('');
+      carregarDetalhesCurso();
+    } catch (err) {
+      console.error('Erro ao excluir avaliação.', err);
+    }
+  };
+
+  // --- AÇÕES DE DENÚNCIA ---
+  const handleIniciarEdicaoDenuncia = (d: any) => {
+    setSelectedDenunciaId(d.id);
+    setCategoriaDenuncia(Number(d.categoria));
+    setRelatoDetalhado(d.relatoDetalhado);
+    
+    // Converte status de texto (se vier) para o número equivalente para o Select
+    let statusNum = 1;
+    const s = String(d.status).toLowerCase();
+    if (s === 'resolvida' || s === '2') statusNum = 2;
+    else if (s === 'arquivada' || s === 'rejeitada' || s === '3') statusNum = 3;
+    setStatusDenuncia(statusNum);
+
+    setOpenEditDenuncia(true);
+  };
+
+  const handleSalvarEdicaoDenuncia = async () => {
+    try {
+      const payload: any = {
+        categoria: Number(categoriaDenuncia),
+        relatoDetalhado: relatoDetalhado
+      };
+
+      if (isAdmin) {
+        payload.status = Number(statusDenuncia);
+      }
+
+      await api.put(`/Denuncia/${selectedDenunciaId}`, payload);
+      setOpenEditDenuncia(false);
+      carregarDetalhesCurso();
+    } catch (err) {
+      console.error('Erro ao editar denúncia.', err);
+    }
+  };
+
+  const handleIniciarExcluirDenuncia = (denunciaId: string) => {
+    setDenunciaIdParaExcluir(denunciaId);
+    setOpenDeleteDenunciaDialog(true);
+  };
+
+  const handleConfirmarExcluirDenuncia = async () => {
+    try {
+      await api.delete(`/Denuncia/${denunciaIdParaExcluir}`);
+      setOpenDeleteDenunciaDialog(false);
+      setDenunciaIdParaExcluir('');
+      carregarDetalhesCurso();
+    } catch (err) {
+      console.error('Erro ao excluir denúncia.', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -86,7 +220,6 @@ const CursoDetalhes = () => {
     }
   };
 
-  // Mapeia o status da denúncia vindo do backend para a tag visual
   const getDenunciaStatusChip = (status: string | number) => {
     const statusStr = String(status).toLowerCase();
     switch (statusStr) {
@@ -104,7 +237,6 @@ const CursoDetalhes = () => {
     }
   };
 
-  // Converte o valor numérico do Enum de denúncia para texto legível
   const getDenunciaCategoriaLabel = (cat: string | number) => {
     switch (Number(cat)) {
       case 1: return 'Conteúdo Enganoso / Propaganda Falsa';
@@ -209,9 +341,34 @@ const CursoDetalhes = () => {
                 {curso.titulo}
               </Typography>
 
-              <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
-                Por: {nomeProdutor}
-              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  Por: <strong>{produtorInfo.nome}</strong> 
+                  {produtorInfo.nicho && ` | Nicho: ${produtorInfo.nicho}`}
+                </Typography>
+                
+                {produtorInfo.links && (
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {produtorInfo.links.split(';').map((link, index) => {
+                      const url = link.trim();
+                      if (!url) return null;
+                      return (
+                        <Chip 
+                          key={index}
+                          label={url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                          component="a"
+                          href={url.startsWith('http') ? url : `https://${url}`}
+                          target="_blank"
+                          clickable
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
               
               <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
                 Plataforma: {curso.plataformaHospedagem || 'Não informada'}
@@ -226,7 +383,6 @@ const CursoDetalhes = () => {
                 {curso.descricaoOriginal}
               </Typography>
 
-              {/* Se houver IA ResumoReputacao */}
               {curso.resumoReputacao && (
                 <Box sx={{ mt: 4, p: 3, backgroundColor: '#e0f2fe', borderRadius: 2 }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#0369a1', mb: 1 }}>
@@ -272,11 +428,11 @@ const CursoDetalhes = () => {
                     <Box sx={{ display: 'flex', gap: 4, mb: 2 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Conteúdo</Typography>
-                        <Rating value={avaliacao.notaEntrega} readOnly size="small" />
+                        <Rating value={avaliacao.notaEntrega} readOnly size="small" precision={0.5} />
                       </Box>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Suporte</Typography>
-                        <Rating value={avaliacao.notaSuporte} readOnly size="small" />
+                        <Rating value={avaliacao.notaSuporte} readOnly size="small" precision={0.5} />
                       </Box>
                     </Box>
 
@@ -284,6 +440,18 @@ const CursoDetalhes = () => {
                       <Typography variant="body2" color="text.primary" sx={{ fontStyle: 'italic' }}>
                         "{avaliacao.comentario}"
                       </Typography>
+                    )}
+
+                    {/* Botões de Ação Dinâmicos */}
+                    {(avaliacao.usuarioId === currentUserId || isAdmin) && (
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                        <Button size="small" variant="outlined" onClick={() => handleIniciarEdicaoAvaliacao(avaliacao)}>
+                          Editar
+                        </Button>
+                        <Button size="small" variant="outlined" color="error" onClick={() => handleIniciarExcluirAvaliacao(avaliacao.id)}>
+                          Excluir
+                        </Button>
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
@@ -294,7 +462,7 @@ const CursoDetalhes = () => {
               </Typography>
             )}
 
-            {/* NOVA SEÇÃO: Histórico de Denúncias */}
+            {/* Histórico de Denúncias */}
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, mt: 6, color: '#b91c1c' }}>
               Denúncias Registradas
             </Typography>
@@ -325,6 +493,18 @@ const CursoDetalhes = () => {
                     <Typography variant="body2" color="text.primary" sx={{ mt: 2, pl: 0.5, lineHeight: 1.6 }}>
                       {denuncia.relatoDetalhado}
                     </Typography>
+
+                    {/* Botões de Ação Dinâmicos */}
+                    {(denuncia.usuarioId === currentUserId || isAdmin) && (
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                        <Button size="small" variant="outlined" onClick={() => handleIniciarEdicaoDenuncia(denuncia)}>
+                          Editar
+                        </Button>
+                        <Button size="small" variant="outlined" color="error" onClick={() => handleIniciarExcluirDenuncia(denuncia.id)}>
+                          Excluir
+                        </Button>
+                      </Box>
+                    )}
                   </CardContent>
                 </Card>
               ))
@@ -376,7 +556,6 @@ const CursoDetalhes = () => {
                 </Button>
               )}
 
-              {/* Box de Promessas do Curso (se houver) */}
               {curso.promessaCursos && curso.promessaCursos.length > 0 && (
                 <Box sx={{ mt: 5 }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -412,6 +591,200 @@ const CursoDetalhes = () => {
         cursoId={curso.id}
         onSuccess={carregarDetalhesCurso} 
       />
+
+      {/* DIALOG EDITAR AVALIAÇÃO */}
+      <Dialog open={openEditAvaliacao} onClose={() => setOpenEditAvaliacao(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Editar Avaliação</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            {isAdmin && (
+              <Box sx={{ mb: 3, p: 2, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: '#0f172a' }}>
+                  Área do Administrador
+                </Typography>
+                
+                {urlComprovante ? (
+                  <Button 
+                    variant="contained" 
+                    color="info" 
+                    startIcon={<ReceiptIcon />}
+                    onClick={() => {
+                      const backendUrl = api.defaults.baseURL?.replace('/api', '') || 'http://localhost:5000';
+                      const urlCompleta = urlComprovante.startsWith('http') ? urlComprovante : `${backendUrl}${urlComprovante}`;
+                      
+                      window.open(urlCompleta, '_blank');
+                    }}
+                    sx={{ mb: 3, width: '100%' }}
+                  >
+                    Visualizar Comprovante Anexado
+                  </Button>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
+                    Nenhum comprovante anexado a esta avaliação.
+                  </Typography>
+                )}
+
+                <TextField
+                  select fullWidth label="Status do Comprovante" variant="outlined" size="small"
+                  value={statusComprovanteAvaliacao} onChange={(e) => setStatusComprovanteAvaliacao(e.target.value)}
+                >
+                  <MenuItem value={1}>Em Análise</MenuItem>
+                  <MenuItem value={2}>Comprovada</MenuItem>
+                  <MenuItem value={3}>Rejeitada</MenuItem>
+                </TextField>
+              </Box>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <Typography variant="body2" sx={{ minWidth: 180 }}>
+                Nota de Entrega/Conteúdo
+              </Typography>
+              <Rating 
+                value={notaEntrega} 
+                precision={0.5}
+                onChange={(_, newValue) => setNotaEntrega(newValue || 0)} 
+              />
+              <TextField
+                type="number"
+                size="small"
+                value={notaEntrega}
+                onChange={(e) => setNotaEntrega(Number(e.target.value))}
+                slotProps={{ htmlInput: { min: 0, max: 5, step: 0.5 } }}
+                sx={{ width: 80 }}
+              />
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <Typography variant="body2" sx={{ minWidth: 180 }}>
+                Nota de Suporte
+              </Typography>
+              <Rating 
+                value={notaSuporte} 
+                precision={0.5}
+                onChange={(_, newValue) => setNotaSuporte(newValue || 0)} 
+              />
+              <TextField
+                type="number"
+                size="small"
+                value={notaSuporte}
+                onChange={(e) => setNotaSuporte(Number(e.target.value))}
+                slotProps={{ htmlInput: { min: 0, max: 5, step: 0.5 } }}
+                sx={{ width: 80 }}
+              />
+            </Box>
+
+            <TextField
+              fullWidth label="Comentário" multiline rows={3} margin="normal" variant="outlined"
+              value={comentarioAvaliacao} onChange={(e) => setComentarioAvaliacao(e.target.value)}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenEditAvaliacao(false)}>Cancelar</Button>
+          <Button variant="contained" color="primary" onClick={handleSalvarEdicaoAvaliacao}>
+            Salvar Alterações
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DIALOG EDITAR DENÚNCIA */}
+      <Dialog open={openEditDenuncia} onClose={() => setOpenEditDenuncia(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Editar Denúncia</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 1 }}>
+            {isAdmin && (
+              <TextField
+                select fullWidth label="Status da Denúncia (Admin)" margin="normal" variant="outlined"
+                value={statusDenuncia} onChange={(e) => setStatusDenuncia(e.target.value)}
+                sx={{ mb: 2 }}
+              >
+                <MenuItem value={1}>Em Análise</MenuItem>
+                <MenuItem value={2}>Resolvida</MenuItem>
+                <MenuItem value={3}>Arquivada</MenuItem>
+              </TextField>
+            )}
+
+            <TextField
+              select fullWidth label="Categoria/Motivo" margin="normal" variant="outlined"
+              value={categoriaDenuncia} onChange={(e) => setCategoriaDenuncia(e.target.value)}
+            >
+              <MenuItem value={1}>Conteúdo Enganoso / Propaganda Falsa</MenuItem>
+              <MenuItem value={2}>Plágio / Direitos Autorais</MenuItem>
+              <MenuItem value={3}>Qualidade Baixa / Inassistível</MenuItem>
+              <MenuItem value={4}>Conteúdo Ofensivo / Inadequado</MenuItem>
+              <MenuItem value={5}>Outros Motivos</MenuItem>
+            </TextField>
+            <TextField
+              fullWidth label="Relato Detalhado" multiline rows={4} margin="normal" variant="outlined"
+              value={relatoDetalhado} onChange={(e) => setRelatoDetalhado(e.target.value)}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenEditDenuncia(false)}>Cancelar</Button>
+          <Button variant="contained" color="primary" onClick={handleSalvarEdicaoDenuncia}>
+            Salvar Alterações
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DIALOG CONFIRMAR EXCLUSÃO DE AVALIAÇÃO */}
+      <Dialog 
+        open={openDeleteAvaliacaoDialog} 
+        onClose={() => setOpenDeleteAvaliacaoDialog(false)}
+        fullWidth 
+        maxWidth="xs"
+      >
+        <DialogTitle sx={{ fontWeight: 'bold', color: '#b91c1c' }}>
+          Confirmar Exclusão
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Tem certeza que deseja remover esta avaliação? Esta ação não poderá ser desfeita.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenDeleteAvaliacaoDialog(false)}>
+            Cancelar
+          </Button>
+          <Button 
+            variant="contained" 
+            color="error" 
+            onClick={handleConfirmarExcluirAvaliacao}
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DIALOG CONFIRMAR EXCLUSÃO DE DENÚNCIA */}
+      <Dialog 
+        open={openDeleteDenunciaDialog} 
+        onClose={() => setOpenDeleteDenunciaDialog(false)}
+        fullWidth 
+        maxWidth="xs"
+      >
+        <DialogTitle sx={{ fontWeight: 'bold', color: '#b91c1c' }}>
+          Confirmar Exclusão
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Tem certeza que deseja remover esta denúncia? Esta ação não poderá ser desfeita.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenDeleteDenunciaDialog(false)}>
+            Cancelar
+          </Button>
+          <Button 
+            variant="contained" 
+            color="error" 
+            onClick={handleConfirmarExcluirDenuncia}
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

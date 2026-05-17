@@ -61,7 +61,7 @@ public class AvaliacaoControllerTests {
         MockUsuarioAutenticado(adminId);
 
         _serviceMock.Setup(s => s.ValidarComprovanteAsync(avalId, adminId, EStatusComprovante.Aprovado))
-            .ReturnsAsync(new AvaliacaoResponseAdminDTO { Id = avalId });
+            .ReturnsAsync(new AvaliacaoResponseDTO { Id = avalId });
 
         var resultado = await _controller.ValidarComprovante(avalId, EStatusComprovante.Aprovado);
 

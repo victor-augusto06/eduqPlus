@@ -8,10 +8,10 @@ namespace EduqPlus.API.Interfaces {
         Task<IEnumerable<AvaliacaoResponseDTO>> ObterTodosAsync(Guid cursoId);
         Task<IEnumerable<AvaliacaoResponseDTO>> ObterAvaliacoesUsuarioAsync(Guid usuarioId);
         Task<IEnumerable<AvaliacaoResponseDTO>> ObterAvaliacoesValidadasAsync(Guid cursoId);
-        Task<IEnumerable<AvaliacaoResponseAdminDTO>> ObterAvaliacoesAdminPorStatusAsync(EStatusComprovante status);
+        Task<IEnumerable<AvaliacaoResponseDTO>> ObterAvaliacoesAdminPorStatusAsync(EStatusComprovante status);
         Task<AvaliacaoResponseDTO> AtualizarAvaliacaoAsync(Guid id, Guid usuarioId, AvaliacaoUpdateDTO avaliacaoDTO);
         Task<bool> ExcluirAvaliacaoAsync(Guid id, Guid usuarioId);
         Task<AvaliacaoResponseDTO> CriarAvaliacaoAsync(AvaliacaoCreateDTO avaliacaoDTO);
-        Task<AvaliacaoResponseAdminDTO> ValidarComprovanteAsync(Guid id, Guid usuarioId, EStatusComprovante statusComprovante);
+        Task<AvaliacaoResponseDTO> ValidarComprovanteAsync(Guid id, Guid usuarioId, EStatusComprovante statusComprovante);
     }
 }

@@ -27,8 +27,6 @@ namespace EduqPlus.API.DTOs {
         public DateTime Data { get; set; }
         public EStatusComprovante StatusComprovante { get; set; }
         public bool IsCompraVerificada { get; set; }
-    }
-    public class AvaliacaoResponseAdminDTO: AvaliacaoResponseDTO {
         public string? UrlComprovante { get; set; }
     }
 }

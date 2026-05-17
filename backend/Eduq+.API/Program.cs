@@ -9,7 +9,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.Extensions.FileProviders;
-using System.IO;
 using System.Text;
 
 Env.TraversePath().Load();
@@ -18,7 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 var contentRoot = builder.Environment.ContentRootPath;
-
 var baseFilesDirectory = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "files"));
 
 if (!Directory.Exists(baseFilesDirectory)) {
@@ -68,9 +66,6 @@ builder.Services.AddScoped<IProdutorService, ProdutorService>();
 builder.Services.AddScoped<IPromessaCursoService, PromessaCursoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-if (string.IsNullOrEmpty(jwtSecret)) {
-    throw new Exception("A chave JWT_SECRET não foi encontrada no arquivo .env");
-}
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(x => {
@@ -127,6 +122,10 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
+app.UseCors("EduqPolicy");
+
 app.UseStaticFiles();
 
 app.UseStaticFiles(new StaticFileOptions {
@@ -134,12 +133,9 @@ app.UseStaticFiles(new StaticFileOptions {
     RequestPath = "/files"
 });
 
-app.UseHttpsRedirection();
-
-app.UseCors("EduqPolicy");
 app.UseAuthentication();
-app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();

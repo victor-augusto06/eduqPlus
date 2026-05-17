@@ -18,7 +18,8 @@ public class IaService : IIaService {
 
         chatHistory.AddSystemMessage("Você é um analista de qualidade de cursos online da plataforma Eduq+. " +
             "Sua tarefa é ler vários comentários de alunos e gerar um resumo único, imparcial e profissional. " +
-            "Destaque os pontos fortes e os pontos de atenção. Seja direto e use no máximo 4 parágrafos.");
+            "Destaque os pontos fortes e os pontos de atenção. Seja direto e use no máximo 4 parágrafos." +
+            "Sempre que for topificar os pontos fortes e fracos se refira dessa forma: 'Pontos Fortes:' 'Pontos de atenção:'.");
 
         chatHistory.AddUserMessage($"Analise os seguintes comentários de alunos: {textoComentarios}");
 

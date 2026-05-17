@@ -240,11 +240,11 @@ namespace EduqPlus.API.Service {
             return avaliacoes;
         }
 
-        public async Task<IEnumerable<AvaliacaoResponseAdminDTO>> ObterAvaliacoesAdminPorStatusAsync(EStatusComprovante status) {
+        public async Task<IEnumerable<AvaliacaoResponseDTO>> ObterAvaliacoesAdminPorStatusAsync(EStatusComprovante status) {
             var avaliacoes = await _context.Avaliacoes
                 .AsNoTracking()
                 .Where(a => a.StatusComprovante == status) 
-                .Select(c => new AvaliacaoResponseAdminDTO {
+                .Select(c => new AvaliacaoResponseDTO {
                     Id = c.Id,
                     CursoId = c.CursoId,
                     UsuarioId = c.UsuarioId,
@@ -261,7 +261,7 @@ namespace EduqPlus.API.Service {
             return avaliacoes;
         }
 
-        public async Task<AvaliacaoResponseAdminDTO> ValidarComprovanteAsync(Guid id, Guid usuarioId, EStatusComprovante statusComprovante) {
+        public async Task<AvaliacaoResponseDTO> ValidarComprovanteAsync(Guid id, Guid usuarioId, EStatusComprovante statusComprovante) {
             var usuarioAdmin = await _context.Usuarios
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == usuarioId);
@@ -286,7 +286,7 @@ namespace EduqPlus.API.Service {
 
             await _context.SaveChangesAsync();
 
-            return new AvaliacaoResponseAdminDTO {
+            return new AvaliacaoResponseDTO {
                 Id = avaliacaoExistente.Id,
                 CursoId = avaliacaoExistente.CursoId,
                 UsuarioId = avaliacaoExistente.UsuarioId,

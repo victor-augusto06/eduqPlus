@@ -28,6 +28,8 @@ const Dashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  const isAdmin = currentUser?.role === 2 || currentUser?.Role === 2;
+
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtores, setProdutores] = useState<Produtor[]>([]);
@@ -44,7 +46,6 @@ const Dashboard = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Estados para o Modal de Exclusão
   const [dialogExclusaoAberto, setDialogExclusaoAberto] = useState(false);
   const [cursoParaExcluir, setCursoParaExcluir] = useState<string | null>(null);
 
@@ -182,19 +183,16 @@ const Dashboard = () => {
     return acc;
   }, {} as Record<string, Curso[]>);
 
-  // Prepara o modal para abrir
   const handleClickExcluir = (cursoId: string) => {
     setCursoParaExcluir(cursoId);
     setDialogExclusaoAberto(true);
   };
 
-  // Fecha o modal sem excluir
   const handleCancelarExclusao = () => {
     setDialogExclusaoAberto(false);
     setCursoParaExcluir(null);
   };
 
-  // Executa a exclusão de fato
   const handleConfirmarExclusao = async () => {
     if (!cursoParaExcluir) return;
     
@@ -212,7 +210,6 @@ const Dashboard = () => {
 
   const renderCardCurso = (curso: Curso) => {
     const trustScore = curso.trustScore || 0;
-    const isAdmin = currentUser?.role === 2 || currentUser?.Role === 2;
     const isDono = currentUser?.id === curso.usuarioId;
 
     return (
@@ -302,6 +299,17 @@ const Dashboard = () => {
             Eduq+
           </Typography>
           
+          {isAdmin && (
+            <Box sx={{ display: 'flex', gap: 2, mr: 3 }}>
+              <Button color="inherit" onClick={() => navigate('/admin/categorias')} sx={{ fontWeight: 'bold' }}>
+                Categorias
+              </Button>
+              <Button color="inherit" onClick={() => navigate('/admin/produtores')} sx={{ fontWeight: 'bold' }}>
+                Produtores
+              </Button>
+            </Box>
+          )}
+
           {isLoggedIn && (
             <Button 
               color="inherit" 

@@ -368,6 +368,7 @@ const CriarCurso = () => {
             rows={2}
             value={novoProdutorLinks}
             onChange={(e) => setNovoProdutorLinks(e.target.value)}
+            helperText="Você pode adicionar mais de um link separando-os por ponto e vírgula (;)"
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
