@@ -177,7 +177,6 @@ const CursoDetalhes = () => {
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           
-          {/* Coluna Principal: Informações do Curso */}
           <Grid size={{ xs: 12, md: 8 }}>
             <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
@@ -188,6 +187,21 @@ const CursoDetalhes = () => {
                 />
                 {curso.statusAuditoria === EStatusAuditoria.Aprovado && (
                   <Chip label="Auditado" color="success" variant="outlined" icon={<VerifiedIcon />} />
+                )}
+                {curso.statusAuditoria === EStatusAuditoria.Reprovado && (
+                  <Chip 
+                    label="Reprovado em Auditoria" 
+                    color="error" 
+                    variant="outlined" 
+                    icon={<VerifiedIcon />} 
+                  />
+                )}
+                {curso.statusAuditoria === EStatusAuditoria.NaoAuditado && (
+                  <Chip 
+                    label="Não Auditado" 
+                    color="default" 
+                    variant="outlined" 
+                  />
                 )}
               </Box>
 

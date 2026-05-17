@@ -397,11 +397,13 @@ namespace EduqPlus.API.Services {
 
             _context.RemoveRange(cursoExistente.PromessaCursos);
 
-            cursoExistente.PromessaCursos = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
+            var novasPromessas = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
                 Id = Guid.NewGuid(),
                 CursoId = cursoExistente.Id,
                 Descricao = p.Descricao
             }).ToList();
+
+            _context.AddRange(novasPromessas);
 
             await _context.SaveChangesAsync();
 
@@ -484,11 +486,13 @@ namespace EduqPlus.API.Services {
 
             _context.RemoveRange(cursoExistente.PromessaCursos);
 
-            cursoExistente.PromessaCursos = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
+            var novasPromessas = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
                 Id = Guid.NewGuid(),
                 CursoId = cursoExistente.Id,
                 Descricao = p.Descricao
             }).ToList();
+
+            _context.AddRange(novasPromessas);
 
             await _context.SaveChangesAsync();
 
@@ -552,10 +556,9 @@ namespace EduqPlus.API.Services {
 
                 var usuarioRequisicao = await _context.Usuarios.FindAsync(usuarioId);
 
-                bool isDono = cursoExistente.UsuarioId == usuarioId;
                 bool isAdmin = usuarioRequisicao != null && usuarioRequisicao.Role == ERoleUsuario.Admin;
 
-                if (!isDono && !isAdmin)
+                if (!isAdmin)
                     throw new Exception("Você não tem permissão para excluir este curso.");
 
                 _context.Cursos.Remove(cursoExistente);

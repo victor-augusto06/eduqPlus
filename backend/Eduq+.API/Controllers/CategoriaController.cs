@@ -35,7 +35,7 @@ namespace EduqPlus.API.Controllers {
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")] 
+        [Authorize] 
         public async Task<IActionResult> Criar([FromBody] CategoriaCreateDTO dto) {
             try {
                 var categoria = await _categoriaService.CriarCategoriaAsync(dto);

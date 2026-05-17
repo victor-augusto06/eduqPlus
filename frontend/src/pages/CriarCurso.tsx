@@ -18,6 +18,7 @@ interface Produtor {
 
 const CriarCurso = () => {
   const navigate = useNavigate();
+
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtores, setProdutores] = useState<Produtor[]>([]);
   const [loadingInit, setLoadingInit] = useState(true);
@@ -77,7 +78,9 @@ const CriarCurso = () => {
         categoriaId,
         produtorId,
         usuarioId,
-        promessaCursos: []
+        promessaCursos: promessas
+          .filter(p => p.trim() !== '')
+          .map(p => ({ descricao: p }))
       };
 
       await api.post('/Curso', payload);
@@ -131,15 +134,10 @@ const CriarCurso = () => {
       const usuarioId = userStr ? JSON.parse(userStr).id : '';
 
       const payload = {
-        titulo,
-        descricaoOriginal,
-        plataformaHospedagem,
-        categoriaId,
-        produtorId,
         usuarioId,
-        promessaCursos: promessas
-          .filter(p => p.trim() !== '')
-          .map(p => ({ descricao: p }))
+        nome: novoProdutorNome,
+        nichoPrincipal: novoProdutorNicho,
+        linksSociais: novoProdutorLinks
       };
 
       const response = await api.post('/Produtor', payload);
@@ -224,6 +222,7 @@ const CriarCurso = () => {
                 ))}
               </TextField>
               <Button 
+                type="button"
                 variant="outlined" 
                 sx={{ height: 56, minWidth: 100 }} 
                 onClick={() => setOpenCategoriaDialog(true)}
@@ -249,6 +248,7 @@ const CriarCurso = () => {
                 ))}
               </TextField>
               <Button 
+                type="button"
                 variant="outlined" 
                 sx={{ height: 56, minWidth: 100 }} 
                 onClick={() => setOpenProdutorDialog(true)}
@@ -273,6 +273,7 @@ const CriarCurso = () => {
                   onChange={(e) => handlePromessaChange(index, e.target.value)}
                 />
                 <Button 
+                  type="button"
                   variant="outlined" 
                   color="error" 
                   onClick={() => handleRemoverPromessa(index)}
@@ -284,6 +285,7 @@ const CriarCurso = () => {
             ))}
             
             <Button 
+              type="button"
               variant="outlined" 
               color="secondary" 
               onClick={handleAdicionarPromessa}
@@ -293,7 +295,7 @@ const CriarCurso = () => {
             </Button>
 
             <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Button variant="outlined" onClick={() => navigate('/dashboard')}>
+              <Button type="button" variant="outlined" onClick={() => navigate('/dashboard')}>
                 Cancelar
               </Button>
               <Button 
@@ -325,6 +327,7 @@ const CriarCurso = () => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setOpenCategoriaDialog(false)}>Cancelar</Button>
           <Button 
+            type="button"
             onClick={handleCriarCategoria} 
             variant="contained" 
             disabled={loadingCategoria || !novaCategoriaNome.trim()}
@@ -370,6 +373,7 @@ const CriarCurso = () => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setOpenProdutorDialog(false)}>Cancelar</Button>
           <Button 
+            type="button"
             onClick={handleCriarProdutor} 
             variant="contained" 
             disabled={loadingProdutor || !novoProdutorNome.trim()}

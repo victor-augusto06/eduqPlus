@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, TextField, Button, Paper, CircularProgress, 
   Grid, Card, CardContent, CardActions, Chip, AppBar, Toolbar, InputAdornment, IconButton, Pagination,
-  Select, MenuItem, FormControl, InputLabel
+  Select, MenuItem, FormControl, InputLabel,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import api from '../services/api';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
-
 
 interface Categoria {
   id: string;
@@ -24,6 +26,7 @@ interface Produtor {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -40,6 +43,10 @@ const Dashboard = () => {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Estados para o Modal de Exclusão
+  const [dialogExclusaoAberto, setDialogExclusaoAberto] = useState(false);
+  const [cursoParaExcluir, setCursoParaExcluir] = useState<string | null>(null);
 
   const carregarDependencias = async () => {
     try {
@@ -85,8 +92,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('@EduqPlus:token');
+    const userStr = localStorage.getItem('@EduqPlus:user');
+    
     if (token) {
       setIsLoggedIn(true);
+    }
+    
+    if (userStr) {
+      setCurrentUser(JSON.parse(userStr));
     }
   }, []);
 
@@ -126,7 +139,7 @@ const Dashboard = () => {
 
   const aplicarFiltro = async (tipoFiltro: 'categoria' | 'produtor' | 'status', valorId: string | number) => {
     setLoading(true);
-    setIsSearching(true); // Tratamos filtros como uma busca ativa para parar a paginação normal
+    setIsSearching(true); 
     try {
       let response;
       if (tipoFiltro === 'categoria') {
@@ -142,7 +155,7 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error(`Erro ao filtrar por ${tipoFiltro}`, error);
-      setCursos([]); // Limpa se der erro (ex: 404 Nenhum curso encontrado)
+      setCursos([]); 
     } finally {
       setLoading(false);
     }
@@ -155,12 +168,10 @@ const Dashboard = () => {
     limparBusca();
   };
 
-
   const getNomeCategoria = (id: string) => {
     const cat = categorias.find(c => c.id === id);
     return cat ? cat.nome : 'Outros';
   };
-
 
   const cursosAgrupados = cursos.reduce((acc, curso) => {
     const catNome = getNomeCategoria(curso.categoriaId);
@@ -171,9 +182,38 @@ const Dashboard = () => {
     return acc;
   }, {} as Record<string, Curso[]>);
 
+  // Prepara o modal para abrir
+  const handleClickExcluir = (cursoId: string) => {
+    setCursoParaExcluir(cursoId);
+    setDialogExclusaoAberto(true);
+  };
+
+  // Fecha o modal sem excluir
+  const handleCancelarExclusao = () => {
+    setDialogExclusaoAberto(false);
+    setCursoParaExcluir(null);
+  };
+
+  // Executa a exclusão de fato
+  const handleConfirmarExclusao = async () => {
+    if (!cursoParaExcluir) return;
+    
+    try {
+      await api.delete(`/Curso/${cursoParaExcluir}`);
+      carregarCursosBase(page);
+    } catch (error) {
+      console.error("Erro ao excluir curso", error);
+      alert('Você não tem permissão ou ocorreu um erro ao excluir o curso.');
+    } finally {
+      setDialogExclusaoAberto(false);
+      setCursoParaExcluir(null);
+    }
+  };
 
   const renderCardCurso = (curso: Curso) => {
     const trustScore = curso.trustScore || 0;
+    const isAdmin = currentUser?.role === 2 || currentUser?.Role === 2;
+    const isDono = currentUser?.id === curso.usuarioId;
 
     return (
       <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -186,7 +226,6 @@ const Dashboard = () => {
             Por: {getNomeProdutor(curso.produtorId)}
           </Typography>
 
-          {/* Descrição do curso */}
           <Typography variant="body2" color="text.primary" sx={{ mb: 2, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {curso.descricaoOriginal}
           </Typography>
@@ -199,7 +238,6 @@ const Dashboard = () => {
               sx={{ fontWeight: 'bold' }}
             />
 
-            {/* Tag de Auditoria */}
             {curso.statusAuditoria === EStatusAuditoria.Aprovado && (
               <Chip label="Auditado" color="success" size="small" variant="outlined" />
             )}
@@ -207,22 +245,45 @@ const Dashboard = () => {
               <Chip label="Reprovado na Auditoria" color="error" size="small" variant="outlined" />
             )}
 
-            {/* Tag de Denúncia */}
             {curso.denuncia && curso.denuncia.length > 0 && (
               <Chip label={`${curso.denuncia.length} Denúncia(s)`} color="warning" size="small" variant="outlined" />
             )}
           </Box>
         </CardContent>
-        <CardActions>
+        <CardActions sx={{ justifyContent: 'space-between' }}>
           <Button size="small" onClick={() => navigate(`/cursos/${curso.id}`)}>
             Ver Detalhes
           </Button>
+
+          <Box>
+            {(isAdmin || isDono) && (
+              <IconButton 
+                size="small" 
+                color="primary" 
+                onClick={() => navigate(`/curso/editar/${curso.id}`)}
+                title="Editar Curso"
+              >
+                <EditIcon />
+              </IconButton>
+            )}
+            
+            {isAdmin && (
+              <IconButton 
+                size="small" 
+                color="error" 
+                onClick={() => handleClickExcluir(curso.id)}
+                title="Excluir Curso"
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
+          </Box>
         </CardActions>
       </Card>
     );
   };
 
-    const handleAuthAction = () => {
+  const handleAuthAction = () => {
     if (isLoggedIn) {
       localStorage.removeItem('@EduqPlus:token');
       localStorage.removeItem('@EduqPlus:user');
@@ -311,7 +372,7 @@ const Dashboard = () => {
               label="Categoria"
               onChange={(e) => {
                 setFiltroCategoria(e.target.value);
-                setFiltroProdutor(''); setFiltroStatus(''); // Limpa os outros
+                setFiltroProdutor(''); setFiltroStatus(''); 
                 aplicarFiltro('categoria', e.target.value);
               }}
             >
@@ -374,7 +435,6 @@ const Dashboard = () => {
           </Typography>
         ) : (
           <>
-            {/* Renderização Condicional: Agrupado vs Lista Linear */}
             {!isSearching ? (
               Object.keys(cursosAgrupados).map(categoriaNome => (
                 <Box key={categoriaNome} sx={{ mb: 5 }}>
@@ -405,7 +465,6 @@ const Dashboard = () => {
               </Box>
             )}
 
-            {/* Paginação (Visível apenas no modo normal) */}
             {!isSearching && totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
                 <Pagination 
@@ -420,6 +479,31 @@ const Dashboard = () => {
           </>
         )}
       </Container>
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+      <Dialog
+        open={dialogExclusaoAberto}
+        onClose={handleCancelarExclusao}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 'bold', color: '#d32f2f' }}>
+          Confirmar Exclusão
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Tem certeza que deseja excluir este curso permanentemente? Esta ação não pode ser desfeita e todo o histórico vinculado (avaliações, denúncias) também será perdido.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCancelarExclusao} color="inherit">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmarExclusao} color="error" variant="contained" autoFocus>
+            Sim, Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

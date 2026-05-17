@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CriarCurso from './pages/CriarCurso';
 import CursoDetalhes from './pages/CursoDetalhes';
+import Cadastro from './pages/CadastroUsuario';
+import EditarCurso from './pages/EditarCurso';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cursos/:id" element={<CursoDetalhes />} />
           <Route path="/curso/novo" element={<CriarCurso />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/curso/editar/:id" element={<EditarCurso />} />
         </Routes>
       </BrowserRouter>
     </>

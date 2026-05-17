@@ -61,7 +61,7 @@ namespace EduqPlus.API.Controllers {
         }
 
         [HttpGet("status/{status}")]
-        [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         public async Task<IActionResult> ObterPorStatus(EStatusAuditoria status) {
             try {
                 var cursos = await _cursoService.ObterCursoStatusAuditoriaAsync(status);

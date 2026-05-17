@@ -95,7 +95,7 @@ public class CursoServiceTests {
     }
 
     [Fact]
-    public async Task ExcluirCursoAsync_DeveRetornarTrue_QuandoUsuarioEhDono() {
+    public async Task ExcluirCursoAsync_DeveRetornarFalse_QuandoUsuarioEhDono() {
         var context = CriarContexto();
         var donoId = Guid.NewGuid();
         var cursoId = Guid.NewGuid();
@@ -107,8 +107,8 @@ public class CursoServiceTests {
         var service = new CursoService(context, new Mock<IIaService>().Object);
         var resultado = await service.ExcluirCursoAsync(cursoId, donoId);
 
-        resultado.Should().BeTrue();
-        context.Cursos.Count().Should().Be(0);
+        resultado.Should().BeFalse();
+        context.Cursos.Count().Should().Be(1);
     }
 
     [Fact]

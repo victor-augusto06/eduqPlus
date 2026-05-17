@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Container, Paper, Alert } from '@mui/material';
+import { Box, Button, TextField, Typography, Container, Paper, Alert, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -54,7 +54,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)} 
               required
-            />
+            />         
             <TextField
               fullWidth
               label="Senha"
@@ -74,6 +74,18 @@ const Login = () => {
             >
               Entrar
             </Button>
+            <Typography variant="body2" align="center" sx={{ mt: 3 }}>
+              Não tem uma conta?{' '}
+              <Link 
+                component="button" 
+                type="button"
+                variant="body2" 
+                onClick={() => navigate('/cadastro')}
+                sx={{ fontWeight: 'bold' }}
+              >
+                Cadastre-se
+              </Link>
+            </Typography>
           </Box>
         </Paper>
       </Container>
