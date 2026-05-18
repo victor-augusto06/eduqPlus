@@ -10,19 +10,19 @@ Projeto acadêmico (2026).
 
 Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servidor descrita na documentação técnica:
 
-***Camada de Apresentação:** React + TypeScript (SPA) 
+* **Camada de Apresentação:** React + TypeScript (SPA) 
 
 
-***Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core 
+* **Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core 
 
 
-***Camada de Dados (BD):** MySQL 8.0 
+* **Camada de Dados (BD):** MySQL 8.0 
 
 
-***Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local) 
+* **Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local) 
 
 
-***Infraestrutura:** Docker & Docker Compose 
+* **Infraestrutura:** Docker & Docker Compose 
 
 
 
