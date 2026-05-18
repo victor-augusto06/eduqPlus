@@ -1,32 +1,24 @@
 ﻿using EduqPlus.API.Models;
 using EduqPlus.API.Enums;
-using EduqPlus.API.DTOs; // Garanta que suas DTOs de criação estão mapeadas aqui
-using EduqPlus.API.Interfaces; // Namespace das suas interfaces de serviço
+using EduqPlus.API.DTOs; 
+using EduqPlus.API.Interfaces; 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace EduqPlus.API.Data {
     public static class DbInitializer {
         public static async Task SeedAsync(IServiceProvider serviceProvider) {
-            // Resolve o contexto para checagem e migração
             var context = serviceProvider.GetRequiredService<EduqPlusContext>();
             await context.Database.MigrateAsync();
 
-            // Evita duplicidade
             if (await context.Usuarios.AnyAsync() || await context.Categorias.AnyAsync()) {
                 return;
             }
 
             Console.WriteLine("[SEED] Iniciando a geração da base via Services (Gatilhos de IA ativos)...");
 
-            // Resolve os serviços do container de Injeção de Dependência
             var produtorService = serviceProvider.GetRequiredService<IProdutorService>();
             var cursoService = serviceProvider.GetRequiredService<ICursoService>();
-            // Se possuir serviços criados para Avaliação e Denúncia, resolva-os aqui:
-            // var avaliacaoService = serviceProvider.GetRequiredService<IAvaliacaoService>();
-            // var denunciaService = serviceProvider.GetRequiredService<IDenunciaService>();
 
-            // 1. USUÁRIOS (Podem ser inseridos via Context pois a lógica de hash já está aqui)
             var adminId = Guid.NewGuid();
             var usuarioAtivoId = Guid.NewGuid();
             var usuarioLimpoId = Guid.NewGuid();
@@ -60,7 +52,6 @@ namespace EduqPlus.API.Data {
             };
             await context.Usuarios.AddRangeAsync(usuarios);
 
-            // 2. CATEGORIAS (Inserção direta via Context)
             var catProgramacaoId = Guid.NewGuid();
             var catIaDataId = Guid.NewGuid();
             var catFinancasId = Guid.NewGuid();
@@ -72,9 +63,8 @@ namespace EduqPlus.API.Data {
                 new Categoria { Id = catFinancasId, Nome = "Finanças, Investimentos e Mercado Financeiro" }
             };
             await context.Categorias.AddRangeAsync(categorias);
-            await context.SaveChangesAsync(); // Salva base estrutural necessária para os relacionamentos dos Services
+            await context.SaveChangesAsync(); 
 
-            // 3. PRODUTORES (Via Service -> Dispara regras de negócio)
             var prodTechDto = new ProdutorCreateDTO {
                 UsuarioId = usuarioAtivoId,
                 Nome = "Guilherme Silveira (CodeAcademy)",

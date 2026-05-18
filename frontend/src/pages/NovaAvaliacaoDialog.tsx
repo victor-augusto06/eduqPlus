@@ -80,7 +80,6 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
       <DialogContent dividers>
         {erro && <Alert severity="error" sx={{ mb: 2 }}>{erro}</Alert>}
 
-        {/* Esta é a Box principal que agrupa todo o formulário */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           
           <Box>

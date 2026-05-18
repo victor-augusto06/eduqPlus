@@ -106,7 +106,7 @@ const CriarCurso = () => {
     if (promessas.length > 1) {
       setPromessas(promessas.filter((_, i) => i !== index));
     } else {
-      setPromessas(['']); // Se for o único, apenas limpa
+      setPromessas(['']); 
     }
   };
 
@@ -257,7 +257,6 @@ const CriarCurso = () => {
               </Button>
             </Box>
             
-            {/* Seção Dinâmica de Promessas */}
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 3, mb: 1, color: '#475569' }}>
               Promessas do Produtor (Ex: "Acesso Vitalício", "Suporte 24/7")
             </Typography>

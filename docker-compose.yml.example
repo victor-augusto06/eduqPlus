@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: eduqplus_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'SUA_SENHA_ROOT_AQUI'
+      MYSQL_DATABASE: 'eduqplus'
+    ports:
+      - '3306:3306'
+    volumes:
+      - eduqplus_db_data:/var/lib/mysql
+    networks:
+      - eduqplus_network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: eduqplus_ai
+    restart: always
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama_storage:/root/.ollama
+    networks:
+      - eduqplus_network
+
+  backend:
+    build:
+      context: ./backend/Eduq+.API
+      dockerfile: Dockerfile
+    container_name: eduqplus_backend
+    restart: always
+    ports:
+      - '5292:5292'
+    environment:
+      - ConnectionStrings__DefaultConnection=server=database;port=3306;user=root;password=SUA_SENHA_ROOT_AQUI;database=eduqplus
+      - JWT_SECRET=ChaveDeDesenvolvimentoLocal-NaoUseEmProducao-123456
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - eduqplus_uploads:/app/files
+    depends_on:
+      - database
+      - ollama
+    networks:
+      - eduqplus_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eduqplus_frontend
+    restart: always
+    ports:
+      - '5173:5173'
+    depends_on:
+      - backend
+    networks:
+      - eduqplus_network
+
+volumes:
+  eduqplus_db_data:
+  ollama_storage:
+  eduqplus_uploads:
+
+networks:
+  eduqplus_network:
+    driver: bridge

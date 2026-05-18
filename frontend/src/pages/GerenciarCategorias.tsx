@@ -22,16 +22,13 @@ const GerenciarCategorias = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados do Modal de Edição/Criação
   const [openModal, setOpenModal] = useState(false);
   const [categoriaAtual, setCategoriaAtual] = useState<Categoria>({ id: '', nome: '' });
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Estados do Modal de Exclusão
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [idParaExcluir, setIdParaExcluir] = useState('');
   
-  // Estado para o modal de erro de vínculo
   const [openErrorModal, setOpenErrorModal] = useState(false);
 
   const carregarCategorias = async () => {
@@ -50,7 +47,6 @@ const GerenciarCategorias = () => {
     carregarCategorias();
   }, []);
 
-  // --- AÇÕES SALVAR/EDITAR ---
   const handleAbrirCriar = () => {
     setCategoriaAtual({ id: '', nome: '' });
     setIsEditMode(false);
@@ -79,7 +75,6 @@ const GerenciarCategorias = () => {
     }
   };
 
-  // --- AÇÕES EXCLUIR ---
   const handleAbrirExcluir = (id: string) => {
     setIdParaExcluir(id);
     setOpenDeleteModal(true);
@@ -92,7 +87,6 @@ const GerenciarCategorias = () => {
       carregarCategorias();
     } catch (err) {
       console.error('Erro ao excluir categoria', err);
-      // Fecha o modal de perguntar "Tem certeza?" e abre o de erro
       setOpenDeleteModal(false);
       setOpenErrorModal(true);
     }
@@ -165,7 +159,6 @@ const GerenciarCategorias = () => {
         </TableContainer>
       </Container>
 
-      {/* MODAL SALVAR/EDITAR */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 'bold' }}>
           {isEditMode ? 'Editar Categoria' : 'Nova Categoria'}
@@ -184,7 +177,6 @@ const GerenciarCategorias = () => {
         </DialogActions>
       </Dialog>
 
-      {/* MODAL EXCLUIR */}
       <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 'bold', color: '#b91c1c' }}>Confirmar Exclusão</DialogTitle>
         <DialogContent>

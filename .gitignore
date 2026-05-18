@@ -57,3 +57,5 @@ o)
 !.env.example
 
 files/
+
+docker-compose.yml

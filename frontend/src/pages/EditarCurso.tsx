@@ -34,7 +34,6 @@ const EditarCurso = () => {
   const [trustScore, setTrustScore] = useState(0);
   const [resumoReputacao, setResumoReputacao] = useState('');
 
-  // Estados da Auditoria
   const [temAuditoria, setTemAuditoria] = useState(false);
   const [auditoriaRealizada, setAuditoriaRealizada] = useState<any>(null);
   const [novoResultadoAuditoria, setNovoResultadoAuditoria] = useState('');
@@ -71,7 +70,7 @@ const EditarCurso = () => {
         setTrustScore(curso.trustScore);
         setResumoReputacao(curso.resumoReputacao || '');
 
-        // Carrega os dados de auditoria se já existirem
+
         if (curso.auditoria && curso.auditoria.length > 0) {
           setTemAuditoria(true);
           setAuditoriaRealizada(curso.auditoria[0]);
@@ -130,7 +129,6 @@ const EditarCurso = () => {
       const auditorId = user.id;
       const resultadoEnum = novoResultadoAuditoria === 'Aprovado' ? EStatusAuditoria.Aprovado : EStatusAuditoria.Reprovado;
 
-      // Se já possui uma auditoria, faz PUT (AuditoriaUpdateDTO). Caso contrário, POST (AuditoriaCreateDTO).
       if (auditoriaRealizada?.id) {
         await api.put(`/Auditoria/${auditoriaRealizada.id}`, {
           resultado: resultadoEnum,
@@ -259,7 +257,6 @@ const EditarCurso = () => {
                 </TextField>
               </Grid>
 
-              {/* SEÇÃO DE ADMIN */}
               {isAdmin && (
                 <Grid size={{ xs: 12 }}>
                   <Box sx={{ mt: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 2, backgroundColor: '#fafafa' }}>
@@ -292,7 +289,6 @@ const EditarCurso = () => {
                         />
                       </Grid>
 
-                      {/* Registro de Histórico de Auditoria */}
                       <Grid size={{ xs: 12 }}>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: '#1976d2' }}>
@@ -319,7 +315,6 @@ const EditarCurso = () => {
                               <strong>Observação:</strong> {auditoriaRealizada.observacaoAuditor}
                             </Typography>
                             
-                            {/* Botão para Editar visível apenas se for o mesmo criador */}
                             {auditoriaRealizada.auditorId === currentUserId && (
                               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                 <Button 

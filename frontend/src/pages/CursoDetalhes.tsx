@@ -89,14 +89,13 @@ const CursoDetalhes = () => {
     }
   }, [id]);
 
-  // --- AÇÕES DE AVALIAÇÃO ---
   const handleIniciarEdicaoAvaliacao = (av: any) => {
     setSelectedAvaliacaoId(av.id);
     setNotaEntrega(av.notaEntrega);
     setNotaSuporte(av.notaSuporte);
     setComentarioAvaliacao(av.comentario || '');
     setStatusComprovanteAvaliacao(av.statusComprovante || 1);
-    setUrlComprovante(av.comprovanteUrl || av.caminhoComprovante || av.urlComprovante || ''); // Ajuste aqui para a propriedade correta do seu backend
+    setUrlComprovante(av.comprovanteUrl || av.caminhoComprovante || av.urlComprovante || ''); 
     setOpenEditAvaliacao(true);
   };
 
@@ -136,13 +135,11 @@ const CursoDetalhes = () => {
     }
   };
 
-  // --- AÇÕES DE DENÚNCIA ---
   const handleIniciarEdicaoDenuncia = (d: any) => {
     setSelectedDenunciaId(d.id);
     setCategoriaDenuncia(Number(d.categoria));
     setRelatoDetalhado(d.relatoDetalhado);
     
-    // Converte status de texto (se vier) para o número equivalente para o Select
     let statusNum = 1;
     const s = String(d.status).toLowerCase();
     if (s === 'resolvida' || s === '2') statusNum = 2;
@@ -294,7 +291,6 @@ const CursoDetalhes = () => {
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: '#f9fafb', minHeight: '100vh', pb: 6 }}>
-      {/* Cabeçalho */}
       <AppBar position="static" sx={{ mb: 4, backgroundColor: '#1976d2' }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={() => navigate(-1)} sx={{ mr: 2 }}>
@@ -393,7 +389,6 @@ const CursoDetalhes = () => {
               )}
             </Paper>
 
-            {/* Seção de Avaliações */}
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, mt: 6 }}>
               Avaliações dos Alunos
             </Typography>
@@ -442,7 +437,6 @@ const CursoDetalhes = () => {
                       </Typography>
                     )}
 
-                    {/* Botões de Ação Dinâmicos */}
                     {(avaliacao.usuarioId === currentUserId || isAdmin) && (
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
                         <Button size="small" variant="outlined" onClick={() => handleIniciarEdicaoAvaliacao(avaliacao)}>
@@ -462,7 +456,6 @@ const CursoDetalhes = () => {
               </Typography>
             )}
 
-            {/* Histórico de Denúncias */}
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, mt: 6, color: '#b91c1c' }}>
               Denúncias Registradas
             </Typography>
@@ -494,7 +487,6 @@ const CursoDetalhes = () => {
                       {denuncia.relatoDetalhado}
                     </Typography>
 
-                    {/* Botões de Ação Dinâmicos */}
                     {(denuncia.usuarioId === currentUserId || isAdmin) && (
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
                         <Button size="small" variant="outlined" onClick={() => handleIniciarEdicaoDenuncia(denuncia)}>
@@ -515,7 +507,6 @@ const CursoDetalhes = () => {
             )}
           </Grid>
 
-          {/* Coluna Lateral: Ações e Promessas */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Paper elevation={3} sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 20 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
@@ -576,7 +567,6 @@ const CursoDetalhes = () => {
         </Grid>
       </Container>
 
-      {/* Modal de Avaliação */}
       <NovaAvaliacaoDialog 
         open={modalAvaliacaoAberta}
         onClose={() => setModalAvaliacaoAberta(false)}
@@ -584,7 +574,6 @@ const CursoDetalhes = () => {
         onSuccess={carregarDetalhesCurso} 
       />
 
-      {/* Modal de Denúncia */}
       <NovaDenunciaDialog 
         open={modalDenunciaAberta}
         onClose={() => setModalDenunciaAberta(false)}
@@ -592,7 +581,6 @@ const CursoDetalhes = () => {
         onSuccess={carregarDetalhesCurso} 
       />
 
-      {/* DIALOG EDITAR AVALIAÇÃO */}
       <Dialog open={openEditAvaliacao} onClose={() => setOpenEditAvaliacao(false)} fullWidth maxWidth="sm">
         <DialogTitle sx={{ fontWeight: 'bold' }}>Editar Avaliação</DialogTitle>
         <DialogContent>
@@ -687,7 +675,6 @@ const CursoDetalhes = () => {
         </DialogActions>
       </Dialog>
 
-      {/* DIALOG EDITAR DENÚNCIA */}
       <Dialog open={openEditDenuncia} onClose={() => setOpenEditDenuncia(false)} fullWidth maxWidth="sm">
         <DialogTitle sx={{ fontWeight: 'bold' }}>Editar Denúncia</DialogTitle>
         <DialogContent>
@@ -728,7 +715,6 @@ const CursoDetalhes = () => {
         </DialogActions>
       </Dialog>
 
-      {/* DIALOG CONFIRMAR EXCLUSÃO DE AVALIAÇÃO */}
       <Dialog 
         open={openDeleteAvaliacaoDialog} 
         onClose={() => setOpenDeleteAvaliacaoDialog(false)}
@@ -757,7 +743,6 @@ const CursoDetalhes = () => {
         </DialogActions>
       </Dialog>
 
-      {/* DIALOG CONFIRMAR EXCLUSÃO DE DENÚNCIA */}
       <Dialog 
         open={openDeleteDenunciaDialog} 
         onClose={() => setOpenDeleteDenunciaDialog(false)}

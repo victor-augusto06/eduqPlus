@@ -488,7 +488,6 @@ const Dashboard = () => {
         )}
       </Container>
 
-      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
       <Dialog
         open={dialogExclusaoAberto}
         onClose={handleCancelarExclusao}
