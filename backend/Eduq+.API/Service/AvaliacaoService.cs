@@ -29,7 +29,11 @@ namespace EduqPlus.API.Service {
                 if (avaliacaoExistente == null)
                     throw new Exception("Avaliação não encontrada.");
 
-                if (avaliacaoExistente.UsuarioId != usuarioId)
+                var usuarioRequisitante = await _context.Usuarios.FindAsync(usuarioId);
+                if (usuarioRequisitante == null)
+                    throw new Exception("Usuário requisitante não encontrado.");
+
+                if (avaliacaoExistente.UsuarioId != usuarioId && usuarioRequisitante.Role != ERoleUsuario.Admin)
                     throw new Exception("Você não tem permissão para excluir esta avaliação.");
 
                 if (!string.IsNullOrEmpty(avaliacaoExistente.UrlComprovante)) {
@@ -67,13 +71,20 @@ namespace EduqPlus.API.Service {
             if (avaliacaoExistente == null)
                 throw new Exception("Avaliação não encontrada.");
 
-            if (avaliacaoExistente.UsuarioId != usuarioId)
+            var usuarioRequisitante = await _context.Usuarios.FindAsync(usuarioId);
+            if (usuarioRequisitante == null)
+                throw new Exception("Usuário requisitante não encontrado.");
+
+            if (avaliacaoExistente.UsuarioId != usuarioId && usuarioRequisitante.Role != ERoleUsuario.Admin)
                 throw new Exception("Você não tem permissão para alterar esta avaliação.");
 
             avaliacaoExistente.NotaEntrega = avaliacaoDTO.NotaEntrega;
             avaliacaoExistente.NotaSuporte = avaliacaoDTO.NotaSuporte;
+            if (!string.IsNullOrWhiteSpace(avaliacaoDTO.UrlComprovante)) {
+                avaliacaoExistente.UrlComprovante = avaliacaoDTO.UrlComprovante;
+            }
+            avaliacaoExistente.StatusComprovante = avaliacaoDTO.StatusComprovante;
             avaliacaoExistente.Comentario = avaliacaoDTO.Comentario;
-            avaliacaoExistente.UrlComprovante = avaliacaoDTO.UrlComprovante;
             avaliacaoExistente.Curso.AtualizarTrustScore();
 
             await _context.SaveChangesAsync();
@@ -81,7 +92,7 @@ namespace EduqPlus.API.Service {
             return new AvaliacaoResponseDTO {
                 Id = avaliacaoExistente.Id,
                 CursoId = avaliacaoExistente.CursoId,
-                UsuarioId = usuarioId,
+                UsuarioId = avaliacaoExistente.UsuarioId, 
                 NotaEntrega = avaliacaoExistente.NotaEntrega,
                 NotaSuporte = avaliacaoExistente.NotaSuporte,
                 Comentario = avaliacaoExistente.Comentario,

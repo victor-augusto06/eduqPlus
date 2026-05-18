@@ -135,19 +135,19 @@ const CursoDetalhes = () => {
     }
   };
 
-  const handleIniciarEdicaoDenuncia = (d: any) => {
+const handleIniciarEdicaoDenuncia = (d: any) => {
     setSelectedDenunciaId(d.id);
     setCategoriaDenuncia(Number(d.categoria));
     setRelatoDetalhado(d.relatoDetalhado);
     
     let statusNum = 1;
     const s = String(d.status).toLowerCase();
-    if (s === 'resolvida' || s === '2') statusNum = 2;
-    else if (s === 'arquivada' || s === 'rejeitada' || s === '3') statusNum = 3;
+    if (s === 'aceita' || s === '2') statusNum = 2;
+    else if (s === 'rejeitada' || s === '3') statusNum = 3;
     setStatusDenuncia(statusNum);
 
     setOpenEditDenuncia(true);
-  };
+  }
 
   const handleSalvarEdicaoDenuncia = async () => {
     try {
@@ -158,9 +158,11 @@ const CursoDetalhes = () => {
 
       if (isAdmin) {
         payload.status = Number(statusDenuncia);
+        await api.put(`/Denuncia/${selectedDenunciaId}/admin`, payload); 
+      } else {
+        await api.put(`/Denuncia/${selectedDenunciaId}`, payload);
       }
 
-      await api.put(`/Denuncia/${selectedDenunciaId}`, payload);
       setOpenEditDenuncia(false);
       carregarDetalhesCurso();
     } catch (err) {
@@ -217,16 +219,15 @@ const CursoDetalhes = () => {
     }
   };
 
-  const getDenunciaStatusChip = (status: string | number) => {
+const getDenunciaStatusChip = (status: string | number) => {
     const statusStr = String(status).toLowerCase();
     switch (statusStr) {
-      case 'resolvida':
+      case 'aceita':
       case '2':
-        return { label: 'Resolvida', color: 'success' as const };
+        return { label: 'Aceita', color: 'success' as const };
       case 'rejeitada':
-      case 'arquivada':
       case '3':
-        return { label: 'Arquivada', color: 'error' as const };
+        return { label: 'Rejeitada', color: 'error' as const };
       case 'emanalise':
       case '1':
       default:
@@ -686,8 +687,8 @@ const CursoDetalhes = () => {
                 sx={{ mb: 2 }}
               >
                 <MenuItem value={1}>Em Análise</MenuItem>
-                <MenuItem value={2}>Resolvida</MenuItem>
-                <MenuItem value={3}>Arquivada</MenuItem>
+                <MenuItem value={2}>Aceita</MenuItem>
+                <MenuItem value={3}>Rejeitada</MenuItem>
               </TextField>
             )}
 

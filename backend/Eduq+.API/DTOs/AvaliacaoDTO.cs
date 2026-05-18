@@ -15,6 +15,7 @@ namespace EduqPlus.API.DTOs {
         public double NotaSuporte { get; set; }
         public string? Comentario { get; set; }
         public string? UrlComprovante { get; set; }
+        public EStatusComprovante StatusComprovante { get; set; }
     }
     public class AvaliacaoResponseDTO {
         public Guid Id { get; set; }

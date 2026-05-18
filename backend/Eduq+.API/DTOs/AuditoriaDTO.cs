@@ -1,5 +1,4 @@
 ﻿using EduqPlus.API.Enums;
-using EduqPlus.API.Models;
 
 namespace EduqPlus.API.DTOs {
     public class AuditoriaCreateDTO {
