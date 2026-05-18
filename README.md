@@ -10,24 +10,19 @@ Projeto acadêmico (2026).
 
 Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servidor descrita na documentação técnica:
 
-* 
-**Camada de Apresentação:** React + TypeScript (SPA) 
+***Camada de Apresentação:** React + TypeScript (SPA) 
 
 
-* 
-**Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core 
+***Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core 
 
 
-* 
-**Camada de Dados (BD):** MySQL 8.0 
+***Camada de Dados (BD):** MySQL 8.0 
 
 
-* 
-**Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local) 
+***Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local) 
 
 
-* 
-**Infraestrutura:** Docker & Docker Compose 
+***Infraestrutura:** Docker & Docker Compose 
 
 
 
@@ -45,14 +40,26 @@ Graças à conteinerização total da arquitetura via Docker, você não precisa
 ### Passo Único de Inicialização
 
 1. Clone o repositório do projeto para a sua máquina.
-2. Abra o terminal na pasta raiz do repositório clonado (onde está o arquivo `docker-compose.yml`).
+2. Abra o terminal na pasta raiz do repositório clonado ...\Eduq+ (onde está o arquivo `docker-compose.yml`).
 3. Execute o comando de orquestração abaixo:
 
 ```bash
-docker-compose up -d --build
+docker-compose.yml up -d --build
 
 ```
+4. Download Obrigatório dos Modelos de IA: Como os volumes do Docker iniciam limpos, o contêiner do Ollama precisa baixar os modelos necessários para o correto funcionamento do sistema. Com a infraestrutura ativa, execute os seguintes comandos no seu terminal:
 
+```bash
+docker exec -it eduqplus_ai ollama pull nomic-embed-text
+docker exec -it eduqplus_ai ollama pull llama3
+```
+Nota: Aguarde até que ambos os downloads atinjam 100% de conclusão no terminal.
+
+5. Execução Completa do Data Seeder: Com a IA devidamente provisionada e com os modelos em memória, force o reinício do backend para que o inicializador popule as tabelas do MySQL sem falhas de integração:
+
+```bash
+docker compose restart backend
+```
 ---
 
 ## 🔗 Portas e Endereços Disponíveis
@@ -74,9 +81,7 @@ A massa de dados inserida automaticamente no banco configura as contas abaixo pa
 
 | Perfil / Ator | E-mail de Acesso | Senha Padrão | Funcionalidades Demonstráveis no Cenário |
 | --- | --- | --- | --- |
-| **Administrador / Auditor** | `admin@eduqplus.com` | `Admin123` | Validação de comprovantes de compra, execução de auditoria técnica cruzando promessas da página de vendas e moderação de denúncias .
-
- |
+| **Administrador / Auditor** | `admin@eduqplus.com` | `Admin123` | Validação de comprovantes de compra, execução de auditoria técnica cruzando promessas da página de vendas e moderação de denúncias .|
 | **Usuário Ativo / Consumidor** | `carlos.ativo@gmail.com` | `User123` | Demonstrar controle de propriedade. Ele possui cursos cadastrados, avaliações escritas por ele e denúncias ativas (botões de edição e exclusão aparecem apenas para o dono do registro). |
 | **Usuário Limpo** | `mariana.limpa@gmail.com` | `User123` | Experiência limpa de um novo estudante ingressando na plataforma do zero. |
 

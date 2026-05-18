@@ -1,14 +1,15 @@
 ﻿using EduqPlus.API.Models;
 using EduqPlus.API.Enums;
-using EduqPlus.API.DTOs; 
-using EduqPlus.API.Interfaces; 
+using EduqPlus.API.DTOs;
+using EduqPlus.API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduqPlus.API.Data {
     public static class DbInitializer {
         public static async Task SeedAsync(IServiceProvider serviceProvider) {
             var context = serviceProvider.GetRequiredService<EduqPlusContext>();
-            await context.Database.MigrateAsync();
+
+            await context.Database.EnsureCreatedAsync();
 
             if (await context.Usuarios.AnyAsync() || await context.Categorias.AnyAsync()) {
                 return;
@@ -63,7 +64,7 @@ namespace EduqPlus.API.Data {
                 new Categoria { Id = catFinancasId, Nome = "Finanças, Investimentos e Mercado Financeiro" }
             };
             await context.Categorias.AddRangeAsync(categorias);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
             var prodTechDto = new ProdutorCreateDTO {
                 UsuarioId = usuarioAtivoId,

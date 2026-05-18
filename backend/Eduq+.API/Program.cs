@@ -13,13 +13,11 @@ using System.Text;
 using EduqPlus.API.Data;
 
 Env.TraversePath().Load();
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 var contentRoot = builder.Environment.ContentRootPath;
 var baseFilesDirectory = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "files"));
-
 if (!Directory.Exists(baseFilesDirectory)) {
     Directory.CreateDirectory(baseFilesDirectory);
 }
@@ -35,14 +33,19 @@ Console.WriteLine("==========================");
 
 if (string.IsNullOrWhiteSpace(connectionString))
     throw new Exception("ERRO CRÍTICO: DB_CONNECTION não foi encontrada. Verifique se o arquivo .env existe e está na raiz do projeto.");
-
 if (string.IsNullOrWhiteSpace(jwtSecret))
     throw new Exception("ERRO CRÍTICO: JWT_SECRET não foi encontrada no arquivo .env.");
 
 builder.Services.AddDbContext<EduqPlusContext>(options =>
     options.UseMySql(
         connectionString,
-        new MySqlServerVersion(new Version(8, 0, 32))
+        new MySqlServerVersion(new Version(8, 0, 32)),
+        mySqlOptions => {
+            mySqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+        }
     ));
 
 builder.Services.AddKernel()
@@ -127,29 +130,21 @@ using (var scope = app.Services.CreateScope()) {
     var services = scope.ServiceProvider;
     try {
         var context = services.GetRequiredService<EduqPlusContext>();
-        await EduqPlus.API.Data.DbInitializer.SeedAsync(services);
+        await DbInitializer.SeedAsync(services);
     } catch (Exception ex) {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Ocorreu um erro ao popular a base de dados.");
     }
 }
 
-
-
 app.UseHttpsRedirection();
-
 app.UseCors("EduqPolicy");
-
 app.UseStaticFiles();
-
 app.UseStaticFiles(new StaticFileOptions {
     FileProvider = new PhysicalFileProvider(baseFilesDirectory),
     RequestPath = "/files"
 });
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
