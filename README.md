@@ -10,21 +10,11 @@ Projeto acadêmico (2026).
 
 Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servidor descrita na documentação técnica:
 
-* **Camada de Apresentação:** React + TypeScript (SPA) 
-
-
-* **Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core 
-
-
-* **Camada de Dados (BD):** MySQL 8.0 
-
-
-* **Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local) 
-
-
-* **Infraestrutura:** Docker & Docker Compose 
-
-
+* **Camada de Apresentação:** React + TypeScript (SPA)
+* **Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core
+* **Camada de Dados (BD):** MySQL 8.0
+* **Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local)
+* **Infraestrutura:** Docker & Docker Compose
 
 ---
 
@@ -37,17 +27,26 @@ Graças à conteinerização total da arquitetura via Docker, você não precisa
 * [Git](https://git-scm.com) instalado.
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/) rodando ativamente na máquina.
 
-### Passo Único de Inicialização
+### Passos de Inicialização (Primeira Instalação ou Reset Completo)
+
+Para garantir que o banco de dados seja criado corretamente e a Inteligência Artificial provisionada sem falhas de sincronia na primeira execução, siga o fluxo limpo abaixo:
 
 1. Clone o repositório do projeto para a sua máquina.
-2. Abra o terminal na pasta raiz do repositório clonado ...\Eduq+ (onde está o arquivo `docker-compose.yml`).
-3. Execute o comando de orquestração abaixo:
-
-```bash
-docker-compose.yml up -d --build
-
-```
-4. Download Obrigatório dos Modelos de IA: Como os volumes do Docker iniciam limpos, o contêiner do Ollama precisa baixar os modelos necessários para o correto funcionamento do sistema. Com a infraestrutura ativa, execute os seguintes comandos no seu terminal:
+   
+2. Abra o terminal na pasta raiz do repositório clonado `...\Eduq+` (onde está o arquivo `docker-compose.yml`).
+ 
+3. **Limpeza de Segurança:** Garanta que não há volumes ou contêineres residuais bloqueando o banco de dados rodando o comando:
+   ```bash
+   docker compose down -v
+   ```
+   
+4. Subir a Infraestrutura: Execute o comando de orquestração abaixo para construir e subir todos os serviços em segundo plano:
+   ````bash
+   docker compose up -d --build
+   ````
+   Nota: Aguarde cerca de 15 segundos após este comando para que o serviço interno do MySQL inicialize completamente.
+   
+5. Download Obrigatório dos Modelos de IA: Como os volumes do Docker iniciam limpos, o contêiner do Ollama precisa baixar os modelos necessários para o correto funcionamento do sistema. Com a infraestrutura ativa, execute os seguintes comandos no seu terminal:
 
 ```bash
 docker exec -it eduqplus_ai ollama pull nomic-embed-text
@@ -55,7 +54,7 @@ docker exec -it eduqplus_ai ollama pull llama3
 ```
 Nota: Aguarde até que ambos os downloads atinjam 100% de conclusão no terminal.
 
-5. Execução Completa do Data Seeder: Com a IA devidamente provisionada e com os modelos em memória, force o reinício do backend para que o inicializador popule as tabelas do MySQL sem falhas de integração:
+6. Execução Completa do Data Seeder: Com a IA devidamente provisionada e o banco de dados estabilizado, force o reinício do backend para que o inicializador crie a estrutura estruturada e popule as tabelas do MySQL sem falhas de integração:
 
 ```bash
 docker compose restart backend
