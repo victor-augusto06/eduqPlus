@@ -39,7 +39,7 @@ services:
       - JWT_SECRET=ChaveDeDesenvolvimentoLocal-NaoUseEmProducao-123456
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
-      - eduqplus_uploads:/app/files
+      - eduqplus_uploads:/files
     depends_on:
       - database
       - ollama
