@@ -6,15 +6,20 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EduqPlus.API.Controllers {
-
     [ApiController]
     [Route("api/[controller]")]
     public class AvaliacaoController : ControllerBase {
-
         private readonly IAvaliacaoService _avaliacaoService;
+        private readonly IOcrService _ocrService; 
+        private readonly IIaService _iaService; 
 
-        public AvaliacaoController(IAvaliacaoService avaliacaoService) {
+        public AvaliacaoController(
+            IAvaliacaoService avaliacaoService,
+            IOcrService ocrService,
+            IIaService iaService) {
             _avaliacaoService = avaliacaoService;
+            _ocrService = ocrService;
+            _iaService = iaService;
         }
 
         [HttpGet("{id}")]
@@ -58,10 +63,22 @@ namespace EduqPlus.API.Controllers {
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Criar([FromForm] AvaliacaoCreateDTO dto) {
+        public async Task<IActionResult> Criar(
+            [FromForm] AvaliacaoCreateDTO dto,
+            [FromForm] List<IFormFile>? comprovantes)
+        {
             try {
                 var usuarioIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 dto.UsuarioId = Guid.Parse(usuarioIdToken!);
+
+                if (comprovantes != null && comprovantes.Count > 0) {
+
+                    var ocrResponse = await _ocrService.ExtrairTextosAsync(comprovantes);
+
+                    if (ocrResponse != null && ocrResponse.Success && ocrResponse.Resultados.Count > 0) {
+                        var textoExtraidoCompleto = string.Join("\n\n", ocrResponse.Resultados.Select(r => r.Texto));
+                    }
+                }
 
                 var avaliacao = await _avaliacaoService.CriarAvaliacaoAsync(dto);
                 return CreatedAtAction(nameof(ObterPorId), new { id = avaliacao.Id }, avaliacao);

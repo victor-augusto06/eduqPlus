@@ -119,6 +119,8 @@ builder.Services.AddSwaggerGen(c => {
     });
 });
 
+builder.Services.AddHttpClient<IOcrService, OcrService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment()) {

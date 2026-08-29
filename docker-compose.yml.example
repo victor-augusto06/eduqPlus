@@ -83,6 +83,25 @@ services:
       - backend
     networks:
       - eduqplus_network
+    
+  ocr_api:
+    image: eduqplus-ocr-api
+    container_name: eduqplus_ocr
+
+    build: 
+      context: ./ocr_service
+      dockerfile: Dockerfile
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      - OCR_API_KEY=chave-secreta-desenvolvimento
+
+    restart: unless-stopped
+    
+    networks:
+      - eduqplus_network
 
 volumes:
   eduqplus_db_data:
