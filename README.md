@@ -4,7 +4,22 @@ O **Eduq+** é uma plataforma independente de avaliação e transparência de in
 
 Projeto acadêmico (2026).
 
----
+## 👥 Integrantes da Equipe
+1. Victor Augusto Farias Ferreira
+2. Felipe Alexandre Pereira
+3. Lucas Barroso Silvestrini
+4. Gustavo Felipe
+
+## 📖 Descrição Detalhada do Projeto
+O Eduq+ atua como um portal de auditoria para combater o charlatanismo digital no mercado de cursos online. A plataforma cruza promessas de páginas de vendas com a percepção real dos alunos, calculando um *TrustScore* dos produtos. Para garantir a veracidade das avaliações, o sistema exige a submissão de comprovantes de consumo do curso (como boletos e certificados), os quais passam por um rigoroso processo de validação utilizando Visão Computacional. Além disso, inteligência artificial é empregada de forma ampla no ecossistema para estruturar dados, buscar intenções e recomendar cursos similares com base em filtragem de conteúdo, com um algoritmo de Classificação KNN.
+
+## 🖼️ Pipeline de Processamento de Imagens
+O módulo de processamento atua na validação automatizada de comprovantes de compra e certificados, submetidos pelos alunos. O fluxo segue as seguintes etapas integradas no microsserviço:
+
+1. **Pré-processamento da Imagem:** Recebimento do documento (imagem), redimensionamento para redução do custo computacional e conversão para escala de cinza seguida de binarização (preto e branco), otimizando o documento para o reconhecimento de caracteres.
+2. **Operações Morfológicas:** Aplicação de erosão e abertura de área. Esta etapa é fundamental para limpar ruídos do fundo da imagem e destacar o texto, melhorando significativamente a precisão da leitura.
+3. **Extração de Texto (OCR):** Utilização de ferramentas de Reconhecimento Óptico de Caracteres (como *Tesseract*) para extrair o texto bruto contido no comprovante tratado.
+4. **Estruturação Semântica:** O texto bruto extraído é enviado como *prompt* para o agente de IA (Llama3). A inteligência artificial analisa o bloco de texto desestruturado e identifica/retorna as entidades exatas (nome do aluno, data e curso adquirido) para validação no sistema.
 
 ## 🛠️ Stack Tecnológica
 
@@ -12,11 +27,11 @@ Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servid
 
 * **Camada de Apresentação:** React + TypeScript (SPA)
 * **Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core
+* **Camada de Visão Computacional:** Python (Flask/FastAPI, OpenCV, PyTesseract)
+* **Camada de LLM:** Agente Ollama (Processamento de Linguagem Natural Local)
+* **Camada de Machining Learning:** Algoritmo de K-Nearest Neighbors (KNN) implementado nativamente no backend (Utilização para recomendação de cursos)
 * **Camada de Dados (BD):** MySQL 8.0
-* **Camada de Inteligência (IA):** Agente Ollama (Processamento de Linguagem Natural Local)
 * **Infraestrutura:** Docker & Docker Compose
-
----
 
 ## 📦 Como Instalar e Executar a Infraestrutura
 
@@ -27,25 +42,27 @@ Graças à conteinerização total da arquitetura via Docker, você não precisa
 * [Git](https://git-scm.com) instalado.
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/) rodando ativamente na máquina.
 
-### Passos de Inicialização (Primeira Instalação ou Reset Completo)
+### Passos de Inicialização (Primeira Instalação ou Inicialização)
 
 Para garantir que o banco de dados seja criado corretamente e a Inteligência Artificial provisionada sem falhas de sincronia na primeira execução, siga o fluxo limpo abaixo:
 
 1. Clone o repositório do projeto para a sua máquina.
-   
-2. Abra o terminal na pasta raiz do repositório clonado `...\Eduq+` (onde está o arquivo `docker-compose.yml`).
+
+2. Configure o seu arquivo `docker-compose.yml` seguindo o `docker-compose.yml.example`
+
+3. Abra o terminal na pasta raiz do repositório clonado `...\Eduq+` (onde está o arquivo `docker-compose.yml`).
  
-3. **Limpeza de Segurança:** Garanta que não há volumes ou contêineres residuais bloqueando o banco de dados rodando o comando:
+4. **Limpeza de Segurança:** Garanta que não há volumes ou contêineres residuais bloqueando o banco de dados rodando o comando:
    ```bash
    docker compose down -v
    ```
    
-4. Subir a Infraestrutura: Execute o comando de orquestração abaixo para construir e subir todos os serviços em segundo plano:
+5. Subir a Infraestrutura: Execute o comando de orquestração abaixo para construir e subir todos os serviços em segundo plano:
    ````bash
    docker compose up -d --build
    ````
 
-5. Aguardar o Processamento da IA (Data Seeder): O backend iniciará a inserção de dados de testes e a geração local dos embeddings semânticos em segundo plano. Aguarde de 60 a 90 segundos antes de acessar o sistema pela primeira vez para garantir que todos os cursos e avaliações estejam perfeitamente sincronizados no banco de dados.
+6. Aguardar o Processamento da IA (Data Seeder): O backend iniciará a inserção de dados de testes e a geração local dos embeddings semânticos em segundo plano. Aguarde de 60 a 90 segundos antes de acessar o sistema pela primeira vez para garantir que todos os cursos e avaliações estejam perfeitamente sincronizados no banco de dados.
 
 ## 🔗 Portas e Endereços Disponíveis
 
