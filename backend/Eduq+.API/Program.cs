@@ -130,6 +130,7 @@ using (var scope = app.Services.CreateScope()) {
     var services = scope.ServiceProvider;
     try {
         var context = services.GetRequiredService<EduqPlusContext>();
+        await context.Database.MigrateAsync();
         await DbInitializer.SeedAsync(services);
     } catch (Exception ex) {
         var logger = services.GetRequiredService<ILogger<Program>>();

@@ -4,7 +4,8 @@ services:
   database:
     image: mysql:8.0
     container_name: eduqplus_db
-    restart: always
+    restart: unless-stopped
+    command: --lower_case_table_names=1
     environment:
       MYSQL_ROOT_PASSWORD: 'SUA_SENHA_ROOT_AQUI'
       MYSQL_DATABASE: 'eduqplus'
@@ -12,13 +13,35 @@ services:
       - '3306:3306'
     volumes:
       - eduqplus_db_data:/var/lib/mysql
+      - ./database/Schema.sql:/docker-entrypoint-initdb.d/Schema.sql
     networks:
       - eduqplus_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSUA_SENHA_ROOT_AQUI"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  init-ollama:
+    image: ollama/ollama
+    container_name: eduqplus_init_ai
+    depends_on:
+      ollama:
+        condition: service_started
+    networks:
+      - eduqplus_network
+    entrypoint: 
+      - "/bin/sh"
+      - "-c"
+      - >
+        sleep 5 &&
+        (ollama list | grep -q "nomic-embed-text" || OLLAMA_HOST=ollama:11434 ollama pull nomic-embed-text) &&
+        (ollama list | grep -q "llama3" || OLLAMA_HOST=ollama:11434 ollama pull llama3)
 
   ollama:
     image: ollama/ollama:latest
     container_name: eduqplus_ai
-    restart: always
+    restart: unless-stopped
     ports:
       - '11434:11434'
     volumes:
@@ -31,18 +54,20 @@ services:
       context: ./backend/Eduq+.API
       dockerfile: Dockerfile
     container_name: eduqplus_backend
-    restart: always
+    restart: unless-stopped
     ports:
       - '5292:5292'
     environment:
       - ConnectionStrings__DefaultConnection=server=database;port=3306;user=root;password=SUA_SENHA_ROOT_AQUI;database=eduqplus
       - JWT_SECRET=ChaveDeDesenvolvimentoLocal-NaoUseEmProducao-123456
-      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_URL=http://ollama:11434
     volumes:
       - eduqplus_uploads:/files
     depends_on:
-      - database
-      - ollama
+      database: 
+        condition: service_healthy
+      init-ollama:
+        condition: service_completed_successfully
     networks:
       - eduqplus_network
 
@@ -51,7 +76,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: eduqplus_frontend
-    restart: always
+    restart: unless-stopped
     ports:
       - '5173:5173'
     depends_on:

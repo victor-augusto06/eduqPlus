@@ -44,22 +44,8 @@ Para garantir que o banco de dados seja criado corretamente e a Inteligência Ar
    ````bash
    docker compose up -d --build
    ````
-   Nota: Aguarde cerca de 15 segundos após este comando para que o serviço interno do MySQL inicialize completamente.
-   
-5. Download Obrigatório dos Modelos de IA: Como os volumes do Docker iniciam limpos, o contêiner do Ollama precisa baixar os modelos necessários para o correto funcionamento do sistema. Com a infraestrutura ativa, execute os seguintes comandos no seu terminal:
 
-```bash
-docker exec -it eduqplus_ai ollama pull nomic-embed-text
-docker exec -it eduqplus_ai ollama pull llama3
-```
-Nota: Aguarde até que ambos os downloads atinjam 100% de conclusão no terminal.
-
-6. Execução Completa do Data Seeder: Com a IA devidamente provisionada e o banco de dados estabilizado, force o reinício do backend para que o inicializador crie a estrutura estruturada e popule as tabelas do MySQL sem falhas de integração:
-
-```bash
-docker compose restart backend
-```
----
+5. Aguardar o Processamento da IA (Data Seeder): O backend iniciará a inserção de dados de testes e a geração local dos embeddings semânticos em segundo plano. Aguarde de 60 a 90 segundos antes de acessar o sistema pela primeira vez para garantir que todos os cursos e avaliações estejam perfeitamente sincronizados no banco de dados.
 
 ## 🔗 Portas e Endereços Disponíveis
 
