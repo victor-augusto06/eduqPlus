@@ -19,8 +19,7 @@ namespace EduqPlus.API.Service {
         }
 
         public async Task<bool> ExcluirAvaliacaoAsync(Guid id, Guid usuarioId) {
-            try 
-            {
+            try {
                 var avaliacaoExistente = await _context.Avaliacoes
                     .Include(a => a.Curso)
                         .ThenInclude(c => c.Avaliacoes)
@@ -52,11 +51,9 @@ namespace EduqPlus.API.Service {
                 avaliacaoExistente.Curso.AtualizarTrustScore();
 
                 await _context.SaveChangesAsync();
-                
+
                 return true;
-            } 
-            catch (Exception ex) 
-            {
+            } catch (Exception ex) {
                 Console.WriteLine("AvaliacaoService.ExcluirAvaliacaoAsync - Erro inesperado ocorreu: " + ex.ToString());
                 return false;
             }
@@ -92,7 +89,7 @@ namespace EduqPlus.API.Service {
             return new AvaliacaoResponseDTO {
                 Id = avaliacaoExistente.Id,
                 CursoId = avaliacaoExistente.CursoId,
-                UsuarioId = avaliacaoExistente.UsuarioId, 
+                UsuarioId = avaliacaoExistente.UsuarioId,
                 NotaEntrega = avaliacaoExistente.NotaEntrega,
                 NotaSuporte = avaliacaoExistente.NotaSuporte,
                 Comentario = avaliacaoExistente.Comentario,
@@ -146,9 +143,9 @@ namespace EduqPlus.API.Service {
                 NotaSuporte = avaliacaoDTO.NotaSuporte,
                 Comentario = avaliacaoDTO.Comentario,
                 UrlComprovante = urlCaminhoArquivo,
-                StatusComprovante = EStatusComprovante.Pendente,
+                StatusComprovante = avaliacaoDTO.StatusComprovante,
                 Data = DateTime.Now,
-                IsCompraVerificada = false
+                IsCompraVerificada = avaliacaoDTO.StatusComprovante == EStatusComprovante.Aprovado
             };
 
             _context.Avaliacoes.Add(novaAvaliacao);
@@ -254,7 +251,7 @@ namespace EduqPlus.API.Service {
         public async Task<IEnumerable<AvaliacaoResponseDTO>> ObterAvaliacoesAdminPorStatusAsync(EStatusComprovante status) {
             var avaliacoes = await _context.Avaliacoes
                 .AsNoTracking()
-                .Where(a => a.StatusComprovante == status) 
+                .Where(a => a.StatusComprovante == status)
                 .Select(c => new AvaliacaoResponseDTO {
                     Id = c.Id,
                     CursoId = c.CursoId,

@@ -1,7 +1,10 @@
-﻿namespace EduqPlus.API.Interfaces;
+﻿using EduqPlus.API.Enums;
+
+namespace EduqPlus.API.Interfaces;
 
 public interface IIaService {
     Task<string> GerarResumoReputacaoAsync(IEnumerable<string> comentarios);
     Task<float[]> GerarEmbeddingAsync(string texto);
     Task<bool> VerificarIntencaoQualidadeAsync(string query);
+    Task<EStatusComprovante> ValidarComprovanteAsync(string textoOcr, string nomeCurso);
 }

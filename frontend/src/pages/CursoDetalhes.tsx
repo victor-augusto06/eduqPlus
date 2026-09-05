@@ -135,7 +135,7 @@ const CursoDetalhes = () => {
     }
   };
 
-const handleIniciarEdicaoDenuncia = (d: any) => {
+  const handleIniciarEdicaoDenuncia = (d: any) => {
     setSelectedDenunciaId(d.id);
     setCategoriaDenuncia(Number(d.categoria));
     setRelatoDetalhado(d.relatoDetalhado);
@@ -207,19 +207,26 @@ const handleIniciarEdicaoDenuncia = (d: any) => {
     );
   }
 
-  const getStatusComprovanteChip = (status: number) => {
-    switch (status) {
-      case 2:
+
+  const getStatusComprovanteChip = (status: number | string) => {
+    const statusStr = String(status).toLowerCase();
+    switch (statusStr) {
+      case '2':
+      case 'aprovado':
+      case 'comprovada':
         return { label: 'Avaliação Comprovada', color: 'success' as const };
-      case 3:
+      case '3':
+      case 'rejeitada':
+      case 'reprovado':
         return { label: 'Avaliação Rejeitada', color: 'error' as const };
-      case 1: 
+      case '1': 
+      case 'pendente':
       default:
         return { label: 'Avaliação em Análise', color: 'warning' as const };
     }
   };
 
-const getDenunciaStatusChip = (status: string | number) => {
+  const getDenunciaStatusChip = (status: string | number) => {
     const statusStr = String(status).toLowerCase();
     switch (statusStr) {
       case 'aceita':
@@ -410,7 +417,9 @@ const getDenunciaStatusChip = (status: string | number) => {
                           {new Date(avaliacao.data).toLocaleDateString('pt-BR')}
                         </Typography>
                       </Box>
-                      {avaliacao.statusComprovante && (
+                      
+                      {/* NOVA ABORDAGEM: Verifica se o valor não é null nem undefined para sempre renderizar a tag */}
+                      {avaliacao.statusComprovante !== undefined && avaliacao.statusComprovante !== null && (
                         <Chip 
                           size="small" 
                           label={getStatusComprovanteChip(avaliacao.statusComprovante).label} 

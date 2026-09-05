@@ -8,7 +8,7 @@ namespace EduqPlus.API.DTOs {
         public double NotaSuporte { get; set; }
         public string? Comentario { get; set; }
         public IFormFile? UrlComprovante { get; set; }
-
+        public EStatusComprovante StatusComprovante { get; set; }
     }
     public class AvaliacaoUpdateDTO {
         public double NotaEntrega { get; set; }

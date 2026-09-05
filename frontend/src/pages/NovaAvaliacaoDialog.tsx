@@ -17,22 +17,35 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
   const [notaEntrega, setNotaEntrega] = useState<number | null>(0);
   const [notaSuporte, setNotaSuporte] = useState<number | null>(0);
   const [comentario, setComentario] = useState('');
-  const [arquivo, setArquivo] = useState<File | null>(null);
+
+  const [arquivos, setArquivos] = useState<File[]>([]);
   
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      
-      if (file.size > 5 * 1024 * 1024) {
-        setErro("O arquivo deve ter no máximo 5MB.");
-        setArquivo(null);
-        return;
+      const filesArray = Array.from(e.target.files);
+      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      const validFiles: File[] = [];
+
+      for (const file of filesArray) {
+        if (!allowedTypes.includes(file.type)) {
+          setErro(`Formato inválido no arquivo "${file.name}". Envie apenas imagens (JPG, PNG) ou PDF.`);
+          setArquivos([]);
+          return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+          setErro(`O arquivo "${file.name}" excede o máximo de 5MB.`);
+          setArquivos([]); 
+          return;
+        }
+        
+        validFiles.push(file);
       }
       
-      setArquivo(file);
+      setArquivos(validFiles);
       setErro('');
     }
   };
@@ -56,18 +69,21 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
     formData.append('notaSuporte', notaSuporte.toString());
     formData.append('comentario', comentario);
     
-    if (arquivo) {
-      formData.append('UrlComprovante', arquivo); 
+    if (arquivos.length > 0) {
+      arquivos.forEach((file) => {
+        formData.append('comprovantes', file); 
+      });
     }
 
     setLoading(true);
     try {
       await api.post('/Avaliacao', formData);
       onSuccess(); 
+      setArquivos([]); 
       onClose();   
     } catch (error: any) {
       console.error(error);
-      setErro(error.response?.data || "Erro ao enviar a avaliação.");
+      setErro(error.response?.data?.mensagem || "Erro ao enviar a avaliação.");
     } finally {
       setLoading(false);
     }
@@ -145,17 +161,21 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
           />
 
           <Box sx={{ mt: 1 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>Comprovante de Compra (PDF ou Imagem)</Typography>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Comprovantes de Compra (PDF ou Imagens)</Typography>
             <Button
               component="label"
               variant="outlined"
               startIcon={<CloudUploadIcon />}
               fullWidth
             >
-              {arquivo ? arquivo.name : "Anexar Comprovante"}
+              {/* Mostra a quantidade de arquivos selecionados ou o nome se for apenas um */}
+              {arquivos.length > 0 
+                ? (arquivos.length === 1 ? arquivos[0].name : `${arquivos.length} arquivo(s) selecionado(s)`) 
+                : "Anexar Comprovantes"}
               <input
                 type="file"
                 hidden
+                multiple
                 accept=".pdf, image/jpeg, image/png"
                 onChange={handleFileChange}
               />
