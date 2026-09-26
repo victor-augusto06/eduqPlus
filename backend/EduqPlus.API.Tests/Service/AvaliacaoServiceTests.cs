@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.DTOs;
+using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
@@ -70,6 +70,14 @@ public class AvaliacaoServiceTests {
         var cursoId = Guid.NewGuid();
 
         context.Cursos.Add(new Curso { Id = cursoId, Titulo = "Curso Teste", UsuarioId = Guid.NewGuid() });
+
+        context.Usuarios.Add(new Usuario {
+            Id = invasorId,
+            Nome = "Invasor",
+            Email = "invasor@test.com",
+            SenhaHash = "hash",
+            Role = ERoleUsuario.Comum
+        });
 
         context.Avaliacoes.Add(new Avaliacao {
             Id = avaliacaoId,

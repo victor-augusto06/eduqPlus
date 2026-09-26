@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EduqPlus.API.Controllers;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
@@ -13,11 +13,25 @@ namespace EduqPlus.API.Tests.Controllers;
 
 public class AvaliacaoControllerTests {
     private readonly Mock<IAvaliacaoService> _serviceMock;
+    private readonly Mock<IOcrService> _ocrServiceMock;
+    private readonly Mock<IIaService> _iaServiceMock;
+    private readonly Mock<ICursoService> _cursoServiceMock;
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<AvaliacaoController>> _loggerMock;
     private readonly AvaliacaoController _controller;
 
     public AvaliacaoControllerTests() {
         _serviceMock = new Mock<IAvaliacaoService>();
-        _controller = new AvaliacaoController(_serviceMock.Object);
+        _ocrServiceMock = new Mock<IOcrService>();
+        _iaServiceMock = new Mock<IIaService>();
+        _cursoServiceMock = new Mock<ICursoService>();
+        _loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<AvaliacaoController>>();
+        
+        _controller = new AvaliacaoController(
+            _serviceMock.Object,
+            _ocrServiceMock.Object,
+            _iaServiceMock.Object,
+            _cursoServiceMock.Object,
+            _loggerMock.Object);
     }
 
     private void MockUsuarioAutenticado(Guid usuarioId) {
