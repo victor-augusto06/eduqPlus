@@ -3,6 +3,7 @@ import numpy as np
 import pytesseract
 import os
 import logging
+import fitz
 
 logger = logging.getLogger("image_processor")
 
@@ -16,8 +17,22 @@ def process_image(image_bytes: bytes) -> str:
     original_image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     if original_image is None:
-        logger.error("Decodificação falhou. Os bytes não representam uma imagem legível.")
-        raise ValueError("The uploaded file is not a valid image.")
+        logger.info("Decodificação falhou. Tentando ler como PDF.")
+        try:
+            doc = fitz.open(stream=image_bytes, filetype="pdf")
+            if len(doc) > 0:
+                page = doc.load_page(0)
+                pix = page.get_pixmap(dpi=300)
+                img_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
+                if pix.n == 4:
+                    original_image = cv2.cvtColor(img_array, cv2.COLOR_RGBA2BGR)
+                else:
+                    original_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+            else:
+                raise ValueError("O PDF está vazio.")
+        except Exception as e:
+            logger.error(f"Falha ao ler como PDF: {str(e)}")
+            raise ValueError("The uploaded file is not a valid image or PDF.")
 
     logger.info("Aplicando redimensionamento (Scale Up x2).")
     enlarged_image = cv2.resize(original_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)

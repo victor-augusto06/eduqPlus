@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Interfaces;
 
@@ -32,8 +32,9 @@ namespace EduqPlus.API.Service {
                 }
             }
 
-            _logger.LogInformation("[OCR SERVICE] Disparando requisição HTTP para http://ocr_api:8000/extract-text/ ...");
-            var response = await _httpClient.PostAsync("http://ocr_api:8000/extract-text/", formContent);
+            var ocrUrl = _configuration["OCR_API_URL"] ?? "http://ocr_api:8000/extract-text/";
+            _logger.LogInformation($"[OCR SERVICE] Disparando requisição HTTP para {ocrUrl} ...");
+            var response = await _httpClient.PostAsync(ocrUrl, formContent);
             response.EnsureSuccessStatusCode();
 
             var jsonString = await response.Content.ReadAsStringAsync();

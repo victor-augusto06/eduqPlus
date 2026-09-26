@@ -17,7 +17,9 @@ logger = logging.getLogger("ocr_api")
 load_dotenv()
 
 API_KEY_NAME = "X-API-KEY"
-SECRET_API_KEY = os.getenv("OCR_API_KEY", "chave-secreta-desenvolvimento")
+SECRET_API_KEY = os.getenv("OCR_API_KEY")
+if not SECRET_API_KEY:
+    raise ValueError("A chave OCR_API_KEY não foi configurada nas variáveis de ambiente.")
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
 
 app = FastAPI(

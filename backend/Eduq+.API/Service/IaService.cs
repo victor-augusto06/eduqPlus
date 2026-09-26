@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.Enums;
+using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -82,9 +82,9 @@ public class IaService : IIaService {
 
         EStatusComprovante statusFinal = EStatusComprovante.Pendente;
 
-        if (textResponse.Contains("APROVADO")) {
+        if (textResponse.StartsWith("APROVADO")) {
             statusFinal = EStatusComprovante.Aprovado;
-        } else if (textResponse.Contains("REJEITADO") || textResponse.Contains("REPROVADO")) {
+        } else if (textResponse.StartsWith("REJEITADO") || textResponse.StartsWith("REPROVADO")) {
             statusFinal = EStatusComprovante.Rejeitado;
         }
 

@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.DTOs;
+using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -69,7 +69,7 @@ namespace EduqPlus.API.Controllers {
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Criar([FromForm] AvaliacaoCreateDTO dto, [FromForm] List<IFormFile>? comprovantes) {
+        public async Task<IActionResult> Criar([FromForm] AvaliacaoCreateDTO dto) {
             try {
                 var usuarioIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 dto.UsuarioId = Guid.Parse(usuarioIdToken!);
@@ -77,14 +77,14 @@ namespace EduqPlus.API.Controllers {
                 dto.StatusComprovante = EStatusComprovante.Pendente;
                 _logger.LogInformation($"[PIPELINE INICIADA] Usuário {dto.UsuarioId} submeteu uma avaliação para o curso {dto.CursoId}.");
 
-                if (comprovantes != null && comprovantes.Count > 0) {
-                    _logger.LogInformation($"[VALIDAÇÃO] {comprovantes.Count} arquivo(s) recebido(s). Iniciando validação de segurança.");
+                if (dto.Comprovantes != null && dto.Comprovantes.Count > 0) {
+                    _logger.LogInformation($"[VALIDAÇÃO] {dto.Comprovantes.Count} arquivo(s) recebido(s). Iniciando validação de segurança.");
 
                     var extensoesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
                     var mimeTypesPermitidos = new[] { "image/jpeg", "image/png", "application/pdf" };
                     long tamanhoMaximo = 5 * 1024 * 1024;
 
-                    foreach (var arquivo in comprovantes) {
+                    foreach (var arquivo in dto.Comprovantes) {
                         var extensao = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
 
                         if (!extensoesPermitidas.Contains(extensao) || !mimeTypesPermitidos.Contains(arquivo.ContentType)) {
@@ -99,7 +99,7 @@ namespace EduqPlus.API.Controllers {
                     }
 
                     _logger.LogInformation("[OCR] Arquivos validados. Enviando para o microsserviço Python...");
-                    var ocrResponse = await _ocrService.ExtrairTextosAsync(comprovantes);
+                    var ocrResponse = await _ocrService.ExtrairTextosAsync(dto.Comprovantes);
 
                     if (ocrResponse != null && ocrResponse.Success && ocrResponse.Resultados.Count > 0) {
                         _logger.LogInformation("[OCR SUCCESS] Textos extraídos com sucesso pelas rotinas Python.");

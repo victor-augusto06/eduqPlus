@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.Enums;
+using EduqPlus.API.Enums;
 
 namespace EduqPlus.API.DTOs {
     public class AvaliacaoCreateDTO {
@@ -7,7 +7,7 @@ namespace EduqPlus.API.DTOs {
         public double NotaEntrega { get; set; }
         public double NotaSuporte { get; set; }
         public string? Comentario { get; set; }
-        public IFormFile? UrlComprovante { get; set; }
+        public List<IFormFile>? Comprovantes { get; set; }
         public EStatusComprovante StatusComprovante { get; set; }
     }
     public class AvaliacaoUpdateDTO {

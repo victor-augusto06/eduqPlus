@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.DTOs;
+using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
@@ -36,13 +36,16 @@ namespace EduqPlus.API.Service {
                     throw new Exception("Você não tem permissão para excluir esta avaliação.");
 
                 if (!string.IsNullOrEmpty(avaliacaoExistente.UrlComprovante)) {
-
-                    string caminhoRelativo = avaliacaoExistente.UrlComprovante.TrimStart('/');
+                    var caminhos = avaliacaoExistente.UrlComprovante.Split(';', StringSplitOptions.RemoveEmptyEntries);
                     string pastaBase = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", ".."));
-                    string caminhoFisicoCompleto = Path.Combine(pastaBase, caminhoRelativo.Replace("/", Path.DirectorySeparatorChar.ToString()));
 
-                    if (System.IO.File.Exists(caminhoFisicoCompleto)) {
-                        System.IO.File.Delete(caminhoFisicoCompleto);
+                    foreach (var caminho in caminhos) {
+                        string caminhoRelativo = caminho.TrimStart('/');
+                        string caminhoFisicoCompleto = Path.Combine(pastaBase, caminhoRelativo.Replace("/", Path.DirectorySeparatorChar.ToString()));
+
+                        if (File.Exists(caminhoFisicoCompleto)) {
+                            File.Delete(caminhoFisicoCompleto);
+                        }
                     }
                 }
 
@@ -109,30 +112,38 @@ namespace EduqPlus.API.Service {
 
             string? urlCaminhoArquivo = null;
 
-            if (avaliacaoDTO.UrlComprovante != null && avaliacaoDTO.UrlComprovante.Length > 0) {
+            if (avaliacaoDTO.Comprovantes != null && avaliacaoDTO.Comprovantes.Count > 0) {
+                var caminhosSalvos = new List<string>();
                 var extensoesPermitidas = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
-                var extensao = Path.GetExtension(avaliacaoDTO.UrlComprovante.FileName).ToLowerInvariant();
-
-                if (!extensoesPermitidas.Contains(extensao))
-                    throw new Exception("Formato de arquivo não permitido. Envie apenas PDF, JPG ou PNG.");
-
-                if (avaliacaoDTO.UrlComprovante.Length > 5 * 1024 * 1024)
-                    throw new Exception("O arquivo excede o tamanho máximo permitido de 5MB.");
-
-                string nomeUnicoArquivo = Guid.NewGuid().ToString() + extensao;
-
                 string pastaDestino = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", "..", "files", "comprovantes"));
 
                 if (!Directory.Exists(pastaDestino))
                     Directory.CreateDirectory(pastaDestino);
 
-                string caminhoCompletoFisico = Path.Combine(pastaDestino, nomeUnicoArquivo);
+                foreach (var arquivo in avaliacaoDTO.Comprovantes) {
+                    if (arquivo.Length > 0) {
+                        var extensao = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
 
-                using (var stream = new FileStream(caminhoCompletoFisico, FileMode.Create)) {
-                    await avaliacaoDTO.UrlComprovante.CopyToAsync(stream);
+                        if (!extensoesPermitidas.Contains(extensao))
+                            throw new Exception($"Formato de arquivo não permitido ({arquivo.FileName}). Envie apenas PDF, JPG ou PNG.");
+
+                        if (arquivo.Length > 5 * 1024 * 1024)
+                            throw new Exception($"O arquivo {arquivo.FileName} excede o tamanho máximo permitido de 5MB.");
+
+                        string nomeUnicoArquivo = Guid.NewGuid().ToString() + extensao;
+                        string caminhoCompletoFisico = Path.Combine(pastaDestino, nomeUnicoArquivo);
+
+                        using (var stream = new FileStream(caminhoCompletoFisico, FileMode.Create)) {
+                            await arquivo.CopyToAsync(stream);
+                        }
+
+                        caminhosSalvos.Add($"/files/comprovantes/{nomeUnicoArquivo}");
+                    }
                 }
-
-                urlCaminhoArquivo = $"/files/comprovantes/{nomeUnicoArquivo}";
+                
+                if (caminhosSalvos.Any()) {
+                    urlCaminhoArquivo = string.Join(";", caminhosSalvos);
+                }
             }
 
             var novaAvaliacao = new Avaliacao {
