@@ -10,7 +10,7 @@ interface NovaAvaliacaoDialogProps {
   open: boolean;
   onClose: () => void;
   cursoId: string;
-  onSuccess: () => void; 
+  onSuccess: (recomendacoes?: any[]) => void; 
 }
 
 const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose, cursoId, onSuccess }) => {
@@ -78,7 +78,19 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
     setLoading(true);
     try {
       await api.post('/Avaliacao', formData);
-      onSuccess(); 
+      
+      let recomendacoes = [];
+      // Se a avaliação for muito positiva (ex: média >= 4.0), busca recomendações!
+      if ((notaEntrega + notaSuporte) / 2 >= 4.0) {
+        try {
+          const recRes = await api.get(`/Curso/${cursoId}/recomendacoes?k=5`);
+          recomendacoes = recRes.data || [];
+        } catch (recError) {
+          console.error("Erro ao buscar recomendações", recError);
+        }
+      }
+
+      onSuccess(recomendacoes.length > 0 ? recomendacoes : undefined); 
       setArquivos([]); 
       onClose();   
     } catch (error: any) {

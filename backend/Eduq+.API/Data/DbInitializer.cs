@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.Models;
+using EduqPlus.API.Models;
 using EduqPlus.API.Enums;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Interfaces;
@@ -136,6 +136,50 @@ namespace EduqPlus.API.Data {
             };
             var cursoFinancasRes = await cursoService.CriarCursoAsync(cursoFinancasDto);
 
+            var cursoCsharpBasicoDto = new CursoCreateDTO {
+                CategoriaId = catProgramacaoId,
+                ProdutorId = prodTechRes.Id,
+                UsuarioId = adminId,
+                Titulo = "Fundamentos de C# e Orientação a Objetos",
+                PlataformaHospedagem = "Hotmart",
+                DescricaoOriginal = "Curso introdutório perfeito para quem quer iniciar na programação backend com C# e .NET. Você aprenderá os conceitos básicos de lógica de programação, variáveis, laços de repetição, coleções (Listas, Arrays) e principalmente os pilares da Orientação a Objetos: Herança, Polimorfismo, Encapsulamento e Abstração.",
+                PromessaCursos = new List<PromessaCursoCreateDTO> { new PromessaCursoCreateDTO { Descricao = "Certificado de conclusão de 40h." } }
+            };
+            var cursoCsharpBasicoRes = await cursoService.CriarCursoAsync(cursoCsharpBasicoDto);
+
+            var cursoMicrosservicosDto = new CursoCreateDTO {
+                CategoriaId = catProgramacaoId,
+                ProdutorId = prodTechRes.Id,
+                UsuarioId = adminId,
+                Titulo = "Arquitetura de Microsserviços com .NET e Docker",
+                PlataformaHospedagem = "Udemy",
+                DescricaoOriginal = "Aprenda a desmembrar monólitos e construir microsserviços modernos utilizando .NET 8. O curso aborda mensageria com RabbitMQ, conteinerização com Docker e Docker Compose, orquestração, bancos de dados distribuídos e monitoramento com Prometheus e Grafana. Tudo conectado via APIs REST e gRPC.",
+                PromessaCursos = new List<PromessaCursoCreateDTO> { new PromessaCursoCreateDTO { Descricao = "Projeto prático de um e-commerce em microsserviços." } }
+            };
+            var cursoMicrosservicosRes = await cursoService.CriarCursoAsync(cursoMicrosservicosDto);
+
+            var cursoPythonBasicoDto = new CursoCreateDTO {
+                CategoriaId = catIaDataId,
+                ProdutorId = prodIaRes.Id,
+                UsuarioId = adminId,
+                Titulo = "Introdução ao Pandas e Scikit-Learn",
+                PlataformaHospedagem = "Kiwify",
+                DescricaoOriginal = "Comece sua jornada em Ciência de Dados e Machine Learning! Este curso prático com Python foca nas bibliotecas Pandas para manipulação, limpeza e análise exploratória de dados, e Scikit-Learn para aplicar algoritmos de classificação e regressão de forma simples e direta.",
+                PromessaCursos = new List<PromessaCursoCreateDTO> { new PromessaCursoCreateDTO { Descricao = "10 datasets reais para você treinar." } }
+            };
+            var cursoPythonBasicoRes = await cursoService.CriarCursoAsync(cursoPythonBasicoDto);
+
+            var cursoAcoesDto = new CursoCreateDTO {
+                CategoriaId = catFinancasId,
+                ProdutorId = prodFinRes.Id,
+                UsuarioId = adminId,
+                Titulo = "Dominando a Renda Variável: Ações e FIIs",
+                PlataformaHospedagem = "Eduzz",
+                DescricaoOriginal = "Entenda de uma vez por todas como investir na bolsa de valores. Abordamos análise fundamentalista para escolha de ações consistentes e fundos imobiliários (FIIs) para geração de renda passiva mensal. Aprenda a ler balanços e indicadores financeiros para tomar as melhores decisões de investimento.",
+                PromessaCursos = new List<PromessaCursoCreateDTO> { new PromessaCursoCreateDTO { Descricao = "Acompanhamento de carteira sugerida." } }
+            };
+            var cursoAcoesRes = await cursoService.CriarCursoAsync(cursoAcoesDto);
+
             var c1 = await context.Cursos.FindAsync(cursoCsharpRes.Id);
             if (c1 != null) { c1.TrustScore = 4.5; c1.StatusAuditoria = EStatusAuditoria.Aprovado; }
 
@@ -144,6 +188,19 @@ namespace EduqPlus.API.Data {
 
             var c3 = await context.Cursos.FindAsync(cursoFinancasRes.Id);
             if (c3 != null) { c3.TrustScore = 1.5; c3.StatusAuditoria = EStatusAuditoria.Reprovado; }
+
+            var c4 = await context.Cursos.FindAsync(cursoCsharpBasicoRes.Id);
+            if (c4 != null) { c4.TrustScore = 4.8; c4.StatusAuditoria = EStatusAuditoria.Aprovado; }
+
+            var c5 = await context.Cursos.FindAsync(cursoMicrosservicosRes.Id);
+            if (c5 != null) { c5.TrustScore = 4.6; c5.StatusAuditoria = EStatusAuditoria.Aprovado; }
+
+            var c6 = await context.Cursos.FindAsync(cursoPythonBasicoRes.Id);
+            if (c6 != null) { c6.TrustScore = 4.0; c6.StatusAuditoria = EStatusAuditoria.Aprovado; }
+
+            var c7 = await context.Cursos.FindAsync(cursoAcoesRes.Id);
+            if (c7 != null) { c7.TrustScore = 3.8; c7.StatusAuditoria = EStatusAuditoria.Aprovado; }
+
             await context.SaveChangesAsync();
 
             var avaliacoes = new List<Avaliacao>

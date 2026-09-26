@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
@@ -12,9 +12,11 @@ namespace EduqPlus.API.Controllers {
     public class CursoController : ControllerBase {
 
         private readonly ICursoService _cursoService;
+        private readonly IRecommendationService _recommendationService;
 
-        public CursoController(ICursoService cursoService) {
+        public CursoController(ICursoService cursoService, IRecommendationService recommendationService) {
             _cursoService = cursoService;
+            _recommendationService = recommendationService;
         }
 
         [HttpGet]
@@ -136,6 +138,26 @@ namespace EduqPlus.API.Controllers {
 
             var resultados = await _cursoService.BuscarCursosInteligenteAsync(query);
             return Ok(resultados);
+        }
+
+        [HttpGet("{id}/recomendacoes")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ObterRecomendacoes(Guid id, [FromQuery] int k = 5) {
+            try {
+                var cursosIds = await _recommendationService.ObterCursosRecomendadosAsync(id, k);
+                var cursosRecomendados = new List<CursoResponseDTO>();
+                foreach (var cursoId in cursosIds) {
+                    try {
+                        var curso = await _cursoService.ObterPorIdAsync(cursoId);
+                        cursosRecomendados.Add(curso);
+                    } catch {
+                        // ignore if not found
+                    }
+                }
+                return Ok(cursosRecomendados);
+            } catch (Exception ex) {
+                return BadRequest(new { mensagem = ex.Message });
+            }
         }
     }
 }

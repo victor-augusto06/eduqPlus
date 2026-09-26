@@ -120,6 +120,7 @@ builder.Services.AddSwaggerGen(c => {
 });
 
 builder.Services.AddHttpClient<IOcrService, OcrService>();
+builder.Services.AddHttpClient<IRecommendationService, RecommendationService>();
 
 var app = builder.Build();
 

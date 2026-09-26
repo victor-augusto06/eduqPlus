@@ -103,6 +103,25 @@ services:
     networks:
       - eduqplus_network
 
+  recsys_api:
+    image: eduqplus-recsys-api
+    container_name: eduqplus_recsys
+
+    build: 
+      context: ./recommendation_service
+      dockerfile: Dockerfile
+
+    ports:
+      - "8001:8001"
+
+    environment:
+      - REC_API_KEY=chave-secreta-desenvolvimento
+
+    restart: unless-stopped
+    
+    networks:
+      - eduqplus_network
+
 volumes:
   eduqplus_db_data:
   ollama_storage:

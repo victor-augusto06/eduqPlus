@@ -12,6 +12,7 @@ import api from '../services/api';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 import NovaAvaliacaoDialog from './NovaAvaliacaoDialog';
 import NovaDenunciaDialog from './NovaDenunciaDialog';
+import RecomendacoesCarrosselDialog from './RecomendacoesCarrosselDialog';
 
 const CursoDetalhes = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,8 @@ const CursoDetalhes = () => {
   const [loading, setLoading] = useState(true);
   const [modalAvaliacaoAberta, setModalAvaliacaoAberta] = useState(false);
   const [modalDenunciaAberta, setModalDenunciaAberta] = useState(false);
+  const [modalRecomendacoesAberta, setModalRecomendacoesAberta] = useState(false);
+  const [cursosRecomendados, setCursosRecomendados] = useState<Curso[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [produtorInfo, setProdutorInfo] = useState<{nome: string, nicho?: string, links?: string}>({ nome: 'Carregando...' });
 
@@ -581,7 +584,19 @@ const CursoDetalhes = () => {
         open={modalAvaliacaoAberta}
         onClose={() => setModalAvaliacaoAberta(false)}
         cursoId={curso.id}
-        onSuccess={carregarDetalhesCurso} 
+        onSuccess={(recomendacoes) => {
+          carregarDetalhesCurso();
+          if (recomendacoes && recomendacoes.length > 0) {
+            setCursosRecomendados(recomendacoes);
+            setModalRecomendacoesAberta(true);
+          }
+        }} 
+      />
+
+      <RecomendacoesCarrosselDialog
+        open={modalRecomendacoesAberta}
+        onClose={() => setModalRecomendacoesAberta(false)}
+        cursos={cursosRecomendados}
       />
 
       <NovaDenunciaDialog 
