@@ -151,7 +151,6 @@ namespace EduqPlus.API.Controllers {
                         var curso = await _cursoService.ObterPorIdAsync(cursoId);
                         cursosRecomendados.Add(curso);
                     } catch {
-                        // ignore if not found
                     }
                 }
                 return Ok(cursosRecomendados);

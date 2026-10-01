@@ -80,7 +80,6 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
       await api.post('/Avaliacao', formData);
       
       let recomendacoes = [];
-      // Se a avaliação for muito positiva (ex: média >= 4.0), busca recomendações!
       if ((notaEntrega + notaSuporte) / 2 >= 4.0) {
         try {
           const recRes = await api.get(`/Curso/${cursoId}/recomendacoes?k=5`);
@@ -180,7 +179,6 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
               startIcon={<CloudUploadIcon />}
               fullWidth
             >
-              {/* Mostra a quantidade de arquivos selecionados ou o nome se for apenas um */}
               {arquivos.length > 0 
                 ? (arquivos.length === 1 ? arquivos[0].name : `${arquivos.length} arquivo(s) selecionado(s)`) 
                 : "Anexar Comprovantes"}

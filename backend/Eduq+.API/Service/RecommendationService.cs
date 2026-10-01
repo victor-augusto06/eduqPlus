@@ -28,28 +28,11 @@ namespace EduqPlus.API.Service
 
         public async Task<List<Guid>> ObterCursosRecomendadosAsync(Guid cursoAlvoId, int quantidade = 5)
         {
-            _logger.LogInformation($"[RECSYS] Iniciando extração e busca de recomendações para o curso {cursoAlvoId}.");
-
-            // Extraindo as informações do MySQL sem utilizar o campo VetorSemantico, conforme regra
-            var cursos = await _context.Cursos
-                .Select(c => new CourseFeatureDto
-                {
-                    Id = c.Id.ToString(),
-                    TextContent = $"{c.Titulo} {c.DescricaoOriginal ?? string.Empty}".Trim(),
-                    TrustScore = c.TrustScore ?? 0.0
-                })
-                .ToListAsync();
-
-            if (!cursos.Any(c => c.Id == cursoAlvoId.ToString()))
-            {
-                _logger.LogWarning($"[RECSYS] Curso alvo {cursoAlvoId} não encontrado.");
-                return new List<Guid>();
-            }
+            _logger.LogInformation($"[RECSYS] Iniciando busca de recomendações para o curso {cursoAlvoId}.");
 
             var requestPayload = new RecommendationRequestDto
             {
                 TargetCourseId = cursoAlvoId.ToString(),
-                Courses = cursos,
                 K = quantidade
             };
 
@@ -64,7 +47,7 @@ namespace EduqPlus.API.Service
                 Encoding.UTF8, 
                 "application/json");
 
-            _logger.LogInformation($"[RECSYS] Disparando requisição HTTP POST ({cursos.Count} cursos empacotados) para a IA em {recUrl} ...");
+            _logger.LogInformation($"[RECSYS] Disparando requisição HTTP POST para a IA em {recUrl} ...");
             
             var response = await _httpClient.PostAsync(recUrl, jsonContent);
             
@@ -85,7 +68,8 @@ namespace EduqPlus.API.Service
             }
 
             var recommendedIds = result.Recommendations
-                .OrderBy(r => r.Distance) // Quanto menor a distância, mais similar
+                .OrderBy(r => r.Distance)
+
                 .Select(r => Guid.Parse(r.CourseId))
                 .ToList();
 
