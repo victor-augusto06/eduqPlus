@@ -8,7 +8,7 @@ Projeto acadêmico (2026).
 1. Victor Augusto Farias Ferreira
 2. Felipe Alexandre Pereira
 3. Lucas Barroso Silvestrini
-4. Gustavo Felipe
+4. Gustavo Felipe Bento Lopes
 
 ## 📖 Descrição Detalhada do Projeto
 O Eduq+ atua como um portal de auditoria para combater o charlatanismo digital no mercado de cursos online. A plataforma cruza promessas de páginas de vendas com a percepção real dos alunos, calculando um *TrustScore* dos produtos. Para garantir a veracidade das avaliações, o sistema exige a submissão de comprovantes de consumo do curso (como boletos e certificados), os quais passam por um rigoroso processo de validação utilizando Visão Computacional. Além disso, inteligência artificial é empregada de forma ampla no ecossistema para estruturar dados, buscar intenções e recomendar cursos similares com base em filtragem de conteúdo, com um algoritmo de Classificação KNN.
