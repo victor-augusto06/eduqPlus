@@ -14,22 +14,25 @@ Projeto acadêmico (2026).
 O Eduq+ atua como um portal de auditoria para combater o charlatanismo digital no mercado de cursos online. A plataforma cruza promessas de páginas de vendas com a percepção real dos alunos, calculando um *TrustScore* dos produtos. Para garantir a veracidade das avaliações, o sistema exige a submissão de comprovantes de consumo do curso (como boletos e certificados), os quais passam por um rigoroso processo de validação utilizando Visão Computacional. Além disso, inteligência artificial é empregada de forma ampla no ecossistema para estruturar dados, buscar intenções e recomendar cursos similares com base em filtragem de conteúdo, com um algoritmo de Classificação KNN.
 
 ## 🖼️ Pipeline de Processamento de Imagens
-O módulo de processamento atua na validação automatizada de comprovantes de compra e certificados, submetidos pelos alunos. O fluxo segue as seguintes etapas integradas no microsserviço:
+O módulo de processamento atua na validação automatizada de comprovantes de compra e certificados submetidos pelos alunos. O fluxo segue as seguintes etapas integradas no microsserviço (`ocr_service`):
 
-1. **Pré-processamento da Imagem:** Recebimento do documento (imagem), redimensionamento para redução do custo computacional e conversão para escala de cinza seguida de binarização (preto e branco), otimizando o documento para o reconhecimento de caracteres.
-2. **Operações Morfológicas:** Aplicação de erosão e abertura de área. Esta etapa é fundamental para limpar ruídos do fundo da imagem e destacar o texto, melhorando significativamente a precisão da leitura.
-3. **Extração de Texto (OCR):** Utilização de ferramentas de Reconhecimento Óptico de Caracteres (como *Tesseract*) para extrair o texto bruto contido no comprovante tratado.
-4. **Estruturação Semântica:** O texto bruto extraído é enviado como *prompt* para o agente de IA (Llama3). A inteligência artificial analisa o bloco de texto desestruturado e identifica/retorna as entidades exatas (nome do aluno, data e curso adquirido) para validação no sistema.
+1. **Aquisição e Rasterização (Multi-formato):** Suporte a imagens (`.jpg`, `.jpeg`, `.png`) decodificadas via OpenCV (`imdecode`) e documentos `.pdf` rasterizados em alta resolução (300 DPI) via PyMuPDF (`fitz`).
+2. **Reamostragem Espacial (Scale-Up 2x):** Redimensionamento por interpolação bicúbica (`INTER_CUBIC`) para aumentar a densidade amostral de glifos finos ou documentos de baixa resolução.
+3. **Conversão de Cor e Realce Espacial:** Conversão de BGR para escala de cinza e aplicação de filtragem espacial de nitidez (*sharpening*) com kernel Laplaciano composto $3 \times 3$ (ganho de altas frequências) para acentuar o contraste das bordas dos caracteres.
+4. **Segmentação por Limiarização de Otsu:** Binarização global estatística automática (`THRESH_BINARY + THRESH_OTSU`), separando fundo e texto através da maximização da variância inter-classes.
+5. **Pós-processamento Morfológico:** Aplicação de operação morfológica para controle de conectividade dos traços tipográficos.
+6. **Reconhecimento Óptico de Caracteres (OCR):** Extração de texto bruto via Tesseract 5 (`pytesseract`, modelo LSTM em português, `--psm 6`).
+7. **Auditoria Semântica por IA:** O texto extraído é submetido ao agente Llama 3 (via Semantic Kernel / Ollama) para validação contra o curso correspondente, classificando o comprovante em `APROVADO` (concede selo de Compra Verificada), `REJEITADO` ou `PENDENTE` (encaminhado para moderação administrativa manual).
 
 ## 🛠️ Stack Tecnológica
 
 Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servidor descrita na documentação técnica:
 
 * **Camada de Apresentação:** React + TypeScript (SPA)
-* **Camada de Aplicação (API):** C# ASP.NET Core & Entity Framework Core
-* **Camada de Visão Computacional:** Python (Flask/FastAPI, OpenCV, PyTesseract)
-* **Camada de LLM:** Agente Ollama (Processamento de Linguagem Natural Local)
-* **Camada de Machining Learning:** Algoritmo de K-Nearest Neighbors (KNN) implementado nativamente no backend (Utilização para recomendação de cursos)
+* **Camada de Aplicação (API):** C# ASP.NET Core (.NET 10), Entity Framework Core e Microsoft Semantic Kernel
+* **Camada de Visão Computacional:** Python 3.11 (FastAPI, OpenCV, PyTesseract, PyMuPDF)
+* **Camada de LLM:** Ollama local (Llama 3 para auditoria de comprovantes e consolidação de reputação; Nomic Embed Text para representação vetorial)
+* **Camada de Machine Learning:** Recomendação de cursos por similaridade de conteúdo (TF-IDF + K-Nearest Neighbors) via microsserviço Python dedicado (`recommendation_service`)
 * **Camada de Dados (BD):** MySQL 8.0
 * **Infraestrutura:** Docker & Docker Compose
 
