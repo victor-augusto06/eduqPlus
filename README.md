@@ -24,6 +24,153 @@ O módulo de processamento atua na validação automatizada de comprovantes de c
 6. **Reconhecimento Óptico de Caracteres (OCR):** Extração de texto bruto via Tesseract 5 (`pytesseract`, modelo LSTM em português, `--psm 6`).
 7. **Auditoria Semântica por IA:** O texto extraído é submetido ao agente Llama 3 (via Semantic Kernel / Ollama) para validação contra o curso correspondente, classificando o comprovante em `APROVADO` (concede selo de Compra Verificada), `REJEITADO` ou `PENDENTE` (encaminhado para moderação administrativa manual).
 
+## 🤖 Integração com a Disciplina de IA e Pipeline Completo do Projeto
+
+O Eduq+ integra Inteligência Artificial de ponta a ponta na sua arquitetura, combinando **Machine Learning Clássico** (filtragem baseada em conteúdo e cálculo de similaridade vetorial) e **Inteligência Artificial Generativa / LLMs locais** (processamento de linguagem natural, embeddings densos e classificação semântica).
+
+### Pipeline Completo do Projeto (Fim a Fim)
+
+O fluxo integrado entre os serviços da plataforma, o pipeline de visão computacional e os modelos de IA opera da seguinte forma:
+
+```mermaid
+flowchart TD
+    subgraph Frontend["Camada de Apresentação (React + TypeScript)"]
+        UI_User["Interface do Consumidor / Aluno"]
+        UI_Admin["Painel Administrativo / Auditor"]
+    end
+
+    subgraph Backend["Core API (.NET 10 + Semantic Kernel)"]
+        API["EduqPlus API RESTful"]
+        SecKernel["Microsoft Semantic Kernel Engine"]
+    end
+
+    subgraph Database["Camada de Persistência"]
+        MySQL[("MySQL 8.0 - Cursos, Avaliações e Denúncias")]
+    end
+
+    subgraph OCR_Pipe["Pipeline de Visão Computacional (FastAPI)"]
+        OCR_Entry["Recebimento de Imagem ou PDF"]
+        CV_Proc["Pré-processamento OpenCV (Resample + Sharpening + Otsu)"]
+        OCR_Engine["Pytesseract 5 (Extração de Texto Bruto)"]
+        OCR_Entry --> CV_Proc --> OCR_Engine
+    end
+
+    subgraph AI_Core["Infraestrutura de IA e LLM Local (Ollama)"]
+        Llama["Llama 3 (8B) - Auditoria, Intenção e Sumarização"]
+        Nomic["Nomic Embed Text - Embeddings Vetoriais"]
+    end
+
+    subgraph RecSys["Sistema de Recomendação (FastAPI + Scikit-Learn)"]
+        RecRoutine["Rotina de Treinamento Assíncrono"]
+        TFIDF["Vetorização TF-IDF + Normalização TrustScore"]
+        KNNModel["Modelo NearestNeighbors (Métrica Cosseno)"]
+        RecRoutine --> TFIDF --> KNNModel
+    end
+
+    %% Fluxos de Interação
+    UI_User -->|"Submissão de Avaliação com Comprovante"| API
+    UI_User -->|"Busca Semântica por Cursos"| API
+    UI_User -->|"Visualização de Recomendações e Resumos"| API
+    UI_Admin -->|"Moderação e Auditoria de Reputação"| API
+
+    API -->|"Persistência e Consulta Transacional"| MySQL
+    RecRoutine -.->|"Leitura periódica de Cursos e TrustScore"| MySQL
+
+    API -->|"1. Envio do Comprovante de Compra"| OCR_Entry
+    OCR_Engine -->|"2. Texto Extraído do Comprovante"| API
+
+    API -->|"3. Validação Semântica do Documento"| SecKernel
+    SecKernel -->|"Inferência Zero-Shot de Autenticidade"| Llama
+    Llama -->|"Status: APROVADO / REJEITADO / PENDENTE"| SecKernel
+
+    API -->|"4. Vetorização de Query de Busca"| SecKernel
+    SecKernel -->|"Geração de Embedding Semântico"| Nomic
+    Nomic -->|"Vetor Denso de Alta Dimensionalidade"| API
+
+    API -->|"5. Sumarização de Avaliações"| SecKernel
+    SecKernel -->|"Extração de Pontos Fortes e Atenção"| Llama
+
+    API -->|"6. Consulta de Cursos Similares (POST /recommend)"| RecSys
+    KNNModel -->|"IDs dos K Cursos Mais Próximos"| API
+```
+
+### Componentes e Papel da IA no Projeto:
+
+1. **Recomendação Baseada em Conteúdo (TF-IDF + KNN):**
+   - O microsserviço dedicado `recommendation_service` processa periodicamente o catálogo de cursos armazenado no banco de dados relacional.
+   - Aplica `TfidfVectorizer` (com remoção de stopwords em língua portuguesa) sobre títulos e descrições técnicas, acoplando a matriz de termos ao vetor normalizado de `TrustScore` (reputação auditada).
+   - Treina em memória um modelo `NearestNeighbors` utilizando métrica de distância por cosseno, calculando em tempo real os $k$ cursos mais correlacionados e confiáveis para exibição ao usuário via endpoint `/recommend/`.
+
+2. **Auditoria Automatizada de Documentos (Visão Computacional + LLM):**
+   - Imagens e PDFs de certificados e comprovantes de matrícula passam pelas 7 etapas do pipeline de visão computacional (`ocr_service`).
+   - O texto bruto resultante é submetido ao modelo `Llama 3` via `Semantic Kernel`, que atua como classificador de conformidade para atestar a autenticidade da relação entre aluno e curso, concedendo de forma autônoma o selo de "Compra Verificada".
+
+3. **Busca Semântica e Classificação de Intenção:**
+   - As consultas textuais dos usuários são analisadas pelo `Llama 3` para detecção de intenção de busca por qualidade/confiança vs. busca temática pura.
+   - Embeddings densos gerados pelo modelo `nomic-embed-text` viabilizam busca vetorial conceitual por aproximação de cosseno (ex.: pesquisar por *"banco de dados corporativo performático"* encontra cursos de arquitetura e SQL mesmo sem exata correspondência textual).
+
+4. **Sumarização Analítica de Reputação:**
+   - Avaliações dispersas de estudantes são consolidadas em tempo real pelo `Llama 3`, gerando sínteses estruturadas com pontos fortes e pontos de atenção para tomada ágil de decisão pelo consumidor.
+
+---
+
+## 📊 Dataset Utilizado no Projeto
+
+> [!NOTE]
+> **Observação sobre Datasets:** Este projeto **NÃO utiliza datasets externos, estáticos ou pré-coletados** (como bases do Kaggle, Hugging Face ou arquivos CSV/JSON congelados de terceiros).
+
+### Justificativa da Escolha:
+1. **Natureza Transacional do Sistema:** O Eduq+ é concebido como uma plataforma viva de auditoria descentralizada. Os dados de cursos, avaliações, denúncias e comprovantes são gerados e manipulados dinamicamente pelas interações dos usuários e administradores na base relacional MySQL.
+2. **Data Seeder Automatizado para Demonstração:** Para viabilizar testes, validação da banca e demonstração prática imediata de todas as funcionalidades de IA sem dependências externas, o backend conta com um mecanismo embutido de **Data Seeder** (`backend/Eduq+.API/Data/DataSeeder.cs`). Ao subir os contêineres Docker, o sistema popula automaticamente o banco de dados com uma massa de dados demonstrativa estruturada (cursos de diferentes categorias, avaliações realistas e métricas de reputação).
+3. **Treinamento e Inferência Dinâmicos:**
+   - O modelo de Machine Learning (`recommendation_service`) treina assincronamente a partir das entidades persistidas diretamente no banco de dados (`SELECT Id, Titulo, DescricaoOriginal, TrustScore FROM Curso`).
+   - Os modelos neurais generativos e de representação vetorial (`Llama 3` e `nomic-embed-text`) operam via inferência *zero-shot* e geração de embeddings em tempo de execução, dispensando a necessidade de bases supervisionadas prévias para fine-tuning.
+
+---
+
+## 📋 Arquivos de Requisitos (Requirements)
+
+As dependências de software do ecossistema encontram-se estruturadas por microsserviço e camada de aplicação:
+
+### 1. Serviço de Visão Computacional e OCR (`ocr_service/requirements.txt`)
+Contém os módulos Python necessários para o processamento de imagens, rasterização de PDFs e extração de caracteres:
+* Arquivo: [`ocr_service/requirements.txt`](file:///c:/Users/WinUser/Eduq+/ocr_service/requirements.txt)
+  - `fastapi` e `uvicorn`: API assíncrona de alto desempenho.
+  - `opencv-python-headless`: Manipulação e filtros matemáticos de imagem sem dependência de interface gráfica.
+  - `pytesseract`: Interface com o motor de OCR Tesseract 5.
+  - `pymupdf`: Rasterização em alta resolução (300 DPI) de comprovantes em formato PDF.
+  - `numpy`: Operações matriciais de imagem e kernels de convolução.
+  - `python-multipart` e `python-dotenv`: Gerenciamento de variáveis de ambiente e uploads de arquivos multipart.
+
+### 2. Serviço de Recomendação e Machine Learning (`recommendation_service/requirements.txt`)
+Contém os pacotes de Ciência de Dados e Machine Learning responsáveis pelo cálculo de similaridade e treinamento do KNN:
+* Arquivo: [`recommendation_service/requirements.txt`](file:///c:/Users/WinUser/Eduq+/recommendation_service/requirements.txt)
+  - `scikit-learn`: Implementação do `TfidfVectorizer` e do algoritmo `NearestNeighbors`.
+  - `numpy`: Manipulação de matrizes e normalização do `TrustScore`.
+  - `pymysql`: Conexão com o banco relacional MySQL para ingestão da base de treino.
+  - `fastapi`, `uvicorn`, `pydantic`: Servidor REST e validação de esquemas de entrada/saída.
+
+### 3. Demais Componentes do Sistema
+* **Backend (.NET 10 / C#):** Gerenciado via manifesto de pacotes NuGet em [`backend/Eduq+.API/EduqPlus.API.csproj`](file:///c:/Users/WinUser/Eduq+/backend/Eduq+.API/EduqPlus.API.csproj) (Entity Framework Core, Microsoft Semantic Kernel, Pomelo MySQL).
+* **Frontend (React / TypeScript):** Gerenciado via [`frontend/package.json`](file:///c:/Users/WinUser/Eduq+/frontend/package.json) (Vite, React Router, Tailwind CSS, Lucide React).
+
+#### Instalação Manual das Dependências Python (Opcional - caso execute sem Docker):
+```bash
+# Serviço de Visão Computacional / OCR
+cd ocr_service
+python -m venv venv
+venv\Scripts\activate      # No Windows (ou source venv/bin/activate no Linux/macOS)
+pip install -r requirements.txt
+
+# Serviço de Recomendação (KNN)
+cd ../recommendation_service
+python -m venv venv
+venv\Scripts\activate      # No Windows (ou source venv/bin/activate no Linux/macOS)
+pip install -r requirements.txt
+```
+
+---
+
 ## 🛠️ Stack Tecnológica
 
 Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servidor descrita na documentação técnica:
@@ -61,9 +208,9 @@ Para garantir que o banco de dados seja criado corretamente e a Inteligência Ar
    ```
    
 5. Subir a Infraestrutura: Execute o comando de orquestração abaixo para construir e subir todos os serviços em segundo plano:
-   ````bash
+   ```bash
    docker compose up -d --build
-   ````
+   ```
 
 6. Aguardar o Processamento da IA (Data Seeder): O backend iniciará a inserção de dados de testes e a geração local dos embeddings semânticos em segundo plano. Aguarde de 60 a 90 segundos antes de acessar o sistema pela primeira vez para garantir que todos os cursos e avaliações estejam perfeitamente sincronizados no banco de dados.
 
@@ -94,5 +241,5 @@ A massa de dados inserida automaticamente no banco configura as contas abaixo pa
 
 ## 🧠 Validação Prática dos Recursos de IA
 
-1. **Busca Semântica por Intenção:** Vá ao catálogo de cores e pesquise por conceitos abstratos como *"banco de dados corporativo performático"* ou *"ganhos reais corrigidos pela inflação"*. Os embeddings gerados localmente pela IA farão o cruzamento semântico aproximado mesmo que nenhuma palavra exata conste nos títulos.
+1. **Busca Semântica por Intenção:** Vá ao catálogo de cursos e pesquise por conceitos abstratos como *"banco de dados corporativo performático"* ou *"ganhos reais corrigidos pela inflação"*. Os embeddings gerados localmente pela IA farão o cruzamento semântico aproximado mesmo que nenhuma palavra exata conste nos títulos.
 2. **Resumo Inteligente de Reputação:** Abra o curso *"Formação Avançada em C#"* ou *"Alocação Estratégica"*. A seção superior exibirá um painel contendo a consolidação automatizada feita pela IA dividida entre "Resumo Geral", "Pontos Fortes" e "Pontos de Atenção" capturados com base nas avaliações reais submetidas no portal .

@@ -82,8 +82,8 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
       let recomendacoes = [];
       if ((notaEntrega + notaSuporte) / 2 >= 4.0) {
         try {
-          const recRes = await api.get(`/Curso/${cursoId}/recomendacoes?k=5`);
-          recomendacoes = recRes.data || [];
+          const recRes = await api.get(`/Curso/${cursoId}/recomendacoes?k=3`);
+          recomendacoes = (recRes.data || []).slice(0, 3);
         } catch (recError) {
           console.error("Erro ao buscar recomendações", recError);
         }

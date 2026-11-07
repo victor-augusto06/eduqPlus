@@ -12,11 +12,13 @@ namespace EduqPlus.API.Tests.Controllers;
 
 public class CursoControllerTests {
     private readonly Mock<ICursoService> _serviceMock;
+    private readonly Mock<IRecommendationService> _recServiceMock;
     private readonly CursoController _controller;
 
     public CursoControllerTests() {
         _serviceMock = new Mock<ICursoService>();
-        _controller = new CursoController(_serviceMock.Object);
+        _recServiceMock = new Mock<IRecommendationService>();
+        _controller = new CursoController(_serviceMock.Object, _recServiceMock.Object);
     }
 
     private void MockUsuarioAutenticado(Guid usuarioId) {
@@ -88,4 +90,22 @@ public class CursoControllerTests {
 
         resultado.Should().BeOfType<BadRequestObjectResult>();
     }
+
+    [Fact]
+    public async Task ObterRecomendacoes_DeveLimitarEmTresCursosPorPadrao() {
+        var id = Guid.NewGuid();
+        var recIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        _recServiceMock.Setup(r => r.ObterCursosRecomendadosAsync(id, 3)).ReturnsAsync(recIds);
+        foreach (var recId in recIds) {
+            _serviceMock.Setup(s => s.ObterPorIdAsync(recId)).ReturnsAsync(new CursoResponseDTO { Id = recId, Titulo = "Rec" });
+        }
+
+        var resultado = await _controller.ObterRecomendacoes(id);
+
+        var okResult = resultado.Should().BeOfType<OkObjectResult>().Subject;
+        var cursos = okResult.Value as List<CursoResponseDTO>;
+        cursos.Should().NotBeNull();
+        cursos.Should().HaveCount(3);
+    }
+
 }

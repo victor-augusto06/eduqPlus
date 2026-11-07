@@ -587,7 +587,7 @@ const CursoDetalhes = () => {
         onSuccess={(recomendacoes) => {
           carregarDetalhesCurso();
           if (recomendacoes && recomendacoes.length > 0) {
-            setCursosRecomendados(recomendacoes);
+            setCursosRecomendados(recomendacoes.slice(0, 3));
             setModalRecomendacoesAberta(true);
           }
         }} 

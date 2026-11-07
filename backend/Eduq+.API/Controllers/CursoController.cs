@@ -142,11 +142,11 @@ namespace EduqPlus.API.Controllers {
 
         [HttpGet("{id}/recomendacoes")]
         [AllowAnonymous]
-        public async Task<IActionResult> ObterRecomendacoes(Guid id, [FromQuery] int k = 5) {
+        public async Task<IActionResult> ObterRecomendacoes(Guid id, [FromQuery] int k = 3) {
             try {
                 var cursosIds = await _recommendationService.ObterCursosRecomendadosAsync(id, k);
                 var cursosRecomendados = new List<CursoResponseDTO>();
-                foreach (var cursoId in cursosIds) {
+                foreach (var cursoId in cursosIds.Take(k)) {
                     try {
                         var curso = await _cursoService.ObterPorIdAsync(cursoId);
                         cursosRecomendados.Add(curso);

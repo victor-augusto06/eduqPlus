@@ -145,7 +145,7 @@ def verify_api_key(api_key: str = Security(api_key_header)):
 
 class RecommendationRequest(BaseModel):
     target_course_id: str
-    k: int = 5
+    k: int = 3
 
 @app.post("/recommend/")
 def recommend_courses(payload: RecommendationRequest, api_key: str = Depends(verify_api_key)):

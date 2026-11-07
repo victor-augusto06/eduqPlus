@@ -26,7 +26,7 @@ namespace EduqPlus.API.Service
             _context = context;
         }
 
-        public async Task<List<Guid>> ObterCursosRecomendadosAsync(Guid cursoAlvoId, int quantidade = 5)
+        public async Task<List<Guid>> ObterCursosRecomendadosAsync(Guid cursoAlvoId, int quantidade = 3)
         {
             _logger.LogInformation($"[RECSYS] Iniciando busca de recomendações para o curso {cursoAlvoId}.");
 
@@ -69,7 +69,7 @@ namespace EduqPlus.API.Service
 
             var recommendedIds = result.Recommendations
                 .OrderBy(r => r.Distance)
-
+                .Take(quantidade)
                 .Select(r => Guid.Parse(r.CourseId))
                 .ToList();
 
