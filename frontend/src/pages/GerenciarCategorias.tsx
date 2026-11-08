@@ -3,7 +3,7 @@ import {
   Box, Container, Typography, Button, Paper, CircularProgress, 
   AppBar, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, 
   DialogActions, TextField, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow 
+  TableHead, TableRow, Tooltip 
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -134,15 +134,19 @@ const GerenciarCategorias = () => {
           <Table>
             <TableHead sx={{ backgroundColor: '#f1f5f9' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', width: '80px' }}>#</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Nome da Categoria</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Ações</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {categorias.map((cat) => (
+              {categorias.map((cat, index) => (
                 <TableRow key={cat.id} hover>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{cat.id.substring(0,8)}...</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
+                    <Tooltip title={`ID no banco: ${cat.id}`} arrow placement="top">
+                      <span style={{ cursor: 'help' }}>#{index + 1}</span>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>{cat.nome}</TableCell>
                   <TableCell sx={{ textAlign: 'right' }}>
                     <IconButton color="primary" onClick={() => handleAbrirEditar(cat)}>

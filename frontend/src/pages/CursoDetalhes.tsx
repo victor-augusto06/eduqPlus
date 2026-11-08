@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, Button, Paper, CircularProgress, 
   Grid, Card, CardContent, Chip, Divider, AppBar, Toolbar, IconButton, Rating, Avatar,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Snackbar, Alert
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Snackbar, Alert, Tooltip
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import api from '../services/api';
-import { getAuthToken, getAuthUser } from '../services/auth';
+import { getAuthToken, getAuthUser, isUserAdmin } from '../services/auth';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 import NovaAvaliacaoDialog from './NovaAvaliacaoDialog';
 import NovaDenunciaDialog from './NovaDenunciaDialog';
@@ -90,7 +90,7 @@ const CursoDetalhes = () => {
     const user = getAuthUser();
     if (user) {
 
-      setIsAdmin(user.role === 2 || user.Role === 2);
+      setIsAdmin(isUserAdmin(user));
       setCurrentUserId(user.id || user.Id || '');
     }
   }, [id]);
@@ -504,10 +504,18 @@ const CursoDetalhes = () => {
             </Typography>
 
             {curso.denuncia && curso.denuncia.length > 0 ? (
-              curso.denuncia.map((denuncia: any) => (
+              curso.denuncia.map((denuncia: any, index: number) => (
                 <Card key={denuncia.id} sx={{ mb: 2, borderRadius: 2, borderLeft: '4px solid #b91c1c' }} elevation={1}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                      <Tooltip title={`ID no banco: ${denuncia.id}`} arrow placement="top">
+                        <Chip 
+                          size="small" 
+                          label={`#${index + 1}`} 
+                          variant="outlined" 
+                          sx={{ fontWeight: 'bold', cursor: 'help' }} 
+                        />
+                      </Tooltip>
                       <Chip 
                         size="small" 
                         label={getDenunciaCategoriaLabel(denuncia.categoria)} 

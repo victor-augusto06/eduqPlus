@@ -5,8 +5,8 @@ export interface AuthUser {
   id: string;
   nome: string;
   email: string;
-  role: number;
-  Role?: number;
+  role: number | string;
+  Role?: number | string;
   Id?: string;
   [key: string]: any;
 }
@@ -59,4 +59,38 @@ export const clearAuthSession = (): void => {
 
 export const isAuthenticated = (): boolean => {
   return !!getAuthToken();
+};
+
+const getRoleFromToken = (token: string | null): string | null => {
+  if (!token) return null;
+  try {
+    const rawToken = token.startsWith('Bearer ') ? token.slice(7) : token;
+    const parts = rawToken.split('.');
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload['role'] || payload['Role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+  } catch {
+    return null;
+  }
+};
+
+export const isUserAdmin = (user?: AuthUser | null): boolean => {
+  const target = user || getAuthUser();
+  if (target) {
+    const role = target.role ?? target.Role;
+    if (role !== undefined && role !== null) {
+      if (typeof role === 'number') return role === 2;
+      const roleStr = String(role).trim().toLowerCase();
+      if (roleStr === '2' || roleStr === 'admin') return true;
+    }
+  }
+
+  const token = getAuthToken();
+  const tokenRole = getRoleFromToken(token);
+  if (tokenRole) {
+    const tokenRoleStr = String(tokenRole).trim().toLowerCase();
+    if (tokenRoleStr === '2' || tokenRoleStr === 'admin') return true;
+  }
+
+  return false;
 };

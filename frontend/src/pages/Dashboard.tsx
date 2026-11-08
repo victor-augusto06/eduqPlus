@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import api from '../services/api';
-import { getAuthToken, getAuthUser, clearAuthSession } from '../services/auth';
+import { getAuthToken, getAuthUser, clearAuthSession, isUserAdmin } from '../services/auth';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 
 interface Categoria {
@@ -29,7 +29,7 @@ const Dashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const isAdmin = currentUser?.role === 2 || currentUser?.Role === 2;
+  const isAdmin = isUserAdmin(currentUser);
 
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);

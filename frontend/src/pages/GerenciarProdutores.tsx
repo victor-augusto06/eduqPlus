@@ -3,7 +3,7 @@ import {
   Box, Container, Typography, Button, Paper, CircularProgress, 
   AppBar, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, 
   DialogActions, TextField, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow 
+  TableHead, TableRow, Tooltip 
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,7 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { getAuthUser, isAuthenticated } from '../services/auth';
+import { getAuthUser, isAuthenticated, isUserAdmin } from '../services/auth';
 
 interface Produtor {
   id: string;
@@ -56,7 +56,7 @@ const GerenciarProdutores = () => {
     const user = getAuthUser();
     if (user) {
 
-      setIsAdmin(user.role === 2 || user.Role === 2);
+      setIsAdmin(isUserAdmin(user));
     }
     carregarProdutores();
   }, []);
@@ -162,15 +162,19 @@ const handleConfirmarExcluir = async () => {
           <Table>
             <TableHead sx={{ backgroundColor: '#f1f5f9' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', width: '80px' }}>#</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Nome do Produtor</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Ações</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {produtores.map((prod) => (
+              {produtores.map((prod, index) => (
                 <TableRow key={prod.id} hover>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{prod.id.substring(0,8)}...</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
+                    <Tooltip title={`ID no banco: ${prod.id}`} arrow placement="top">
+                      <span style={{ cursor: 'help' }}>#{index + 1}</span>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>{prod.nome}</TableCell>
                   <TableCell sx={{ textAlign: 'right' }}>
                     <IconButton color="primary" onClick={() => handleAbrirEditar(prod)}>

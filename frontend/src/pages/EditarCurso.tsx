@@ -7,7 +7,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import api from '../services/api';
-import { getAuthUser, isAuthenticated } from '../services/auth';
+import { getAuthUser, isAuthenticated, isUserAdmin } from '../services/auth';
 
 interface Categoria {
   id: string;
@@ -53,7 +53,7 @@ const EditarCurso = () => {
         const user = getAuthUser();
         if (user) {
 
-          setIsAdmin(user.role === 2 || user.Role === 2);
+          setIsAdmin(isUserAdmin(user));
           setCurrentUserId(user.id || user.Id || '');
         }
 
