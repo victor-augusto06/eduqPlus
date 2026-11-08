@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, Typography, Box, Rating, Alert
+  Button, TextField, Typography, Box, Rating, Alert,
+  LinearProgress, CircularProgress
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import api from '../services/api';
 
 interface NovaAvaliacaoDialogProps {
@@ -22,6 +24,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
   
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
+  const [statusMensagem, setStatusMensagem] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -50,6 +53,21 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
     }
   };
 
+  const resetForm = () => {
+    setNotaEntrega(0);
+    setNotaSuporte(0);
+    setComentario('');
+    setArquivos([]);
+    setErro('');
+    setStatusMensagem('');
+  };
+
+  const handleClose = () => {
+    if (loading) return; // evita fechar enquanto processa
+    resetForm();
+    onClose();
+  };
+
   const handleSubmit = async () => {
     if (!notaEntrega || !notaSuporte) {
       setErro("Por favor, preencha ambas as notas.");
@@ -75,39 +93,68 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
       });
     }
 
+    const isAltaAvaliacao = ((notaEntrega + notaSuporte) / 2) >= 4.0;
+
     setLoading(true);
+    setStatusMensagem(arquivos.length > 0 
+      ? "Enviando avaliação e analisando comprovante com IA..." 
+      : "Registrando sua avaliação com segurança...");
+
+    // Dispara a busca de recomendações em paralelo à submissão da avaliação
+    const promessaRecomendacoes = isAltaAvaliacao
+      ? api.get(`/Curso/${cursoId}/recomendacoes?k=3`)
+          .then(res => (res.data || []).slice(0, 3))
+          .catch(recError => {
+            console.warn("Aviso ao buscar recomendações em paralelo:", recError);
+            return [];
+          })
+      : Promise.resolve([]);
+
     try {
       await api.post('/Avaliacao', formData);
       
-      let recomendacoes = [];
-      if ((notaEntrega + notaSuporte) / 2 >= 4.0) {
-        try {
-          const recRes = await api.get(`/Curso/${cursoId}/recomendacoes?k=3`);
-          recomendacoes = (recRes.data || []).slice(0, 3);
-        } catch (recError) {
-          console.error("Erro ao buscar recomendações", recError);
-        }
+      if (isAltaAvaliacao) {
+        setStatusMensagem("Personalizando suas recomendações de cursos...");
       }
 
+      // Aguarda as recomendações que já estavam sendo processadas em paralelo
+      const recomendacoes = await promessaRecomendacoes;
+
       onSuccess(recomendacoes.length > 0 ? recomendacoes : undefined); 
-      setArquivos([]); 
+      resetForm();
       onClose();   
     } catch (error: any) {
       console.error(error);
       setErro(error.response?.data?.mensagem || "Erro ao enviar a avaliação.");
     } finally {
       setLoading(false);
+      setStatusMensagem('');
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ fontWeight: 'bold' }}>Avaliar Curso</DialogTitle>
       
       <DialogContent dividers>
         {erro && <Alert severity="error" sx={{ mb: 2 }}>{erro}</Alert>}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {loading && (
+          <Box sx={{ mb: 3, p: 2, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+              <AutoAwesomeIcon color="primary" sx={{ animation: 'pulse 1.5s infinite' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#166534' }}>
+                {statusMensagem || "Processando avaliação..."}
+              </Typography>
+            </Box>
+            <LinearProgress sx={{ borderRadius: 1, height: 6 }} />
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              Nossos algoritmos inteligentes estão processando os dados para você. Isso leva apenas alguns instantes!
+            </Typography>
+          </Box>
+        )}
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, opacity: loading ? 0.6 : 1, pointerEvents: loading ? 'none' : 'auto' }}>
           
           <Box>
             <Typography component="legend" sx={{ mb: 1 }}>Nota do Conteúdo/Entrega</Typography>
@@ -117,6 +164,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
                 precision={0.1}
                 onChange={(_, newValue) => setNotaEntrega(newValue)}
                 size="large"
+                disabled={loading}
               />
               <TextField
                 type="number"
@@ -125,6 +173,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
                 slotProps={{
                   htmlInput: { min: 0, max: 5, step: 0.1 }
                 }}
+                disabled={loading}
                 value={notaEntrega ?? ''}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
@@ -143,6 +192,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
                 precision={0.1}
                 onChange={(_, newValue) => setNotaSuporte(newValue)}
                 size="large"
+                disabled={loading}
               />
               <TextField
                 type="number"
@@ -151,6 +201,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
                 slotProps={{
                   htmlInput: { min: 0, max: 5, step: 0.1 }
                 }}
+                disabled={loading}
                 value={notaSuporte ?? ''}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
@@ -168,6 +219,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
             fullWidth
+            disabled={loading}
             placeholder="Conte aos outros alunos o que achou do curso..."
           />
 
@@ -178,6 +230,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
               variant="outlined"
               startIcon={<CloudUploadIcon />}
               fullWidth
+              disabled={loading}
             >
               {arquivos.length > 0 
                 ? (arquivos.length === 1 ? arquivos[0].name : `${arquivos.length} arquivo(s) selecionado(s)`) 
@@ -188,6 +241,7 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
                 multiple
                 accept=".pdf, image/jpeg, image/png"
                 onChange={handleFileChange}
+                disabled={loading}
               />
             </Button>
           </Box>
@@ -196,9 +250,16 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} color="inherit" disabled={loading}>Cancelar</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={loading}>
-          {loading ? 'Enviando...' : 'Enviar Avaliação'}
+        <Button onClick={handleClose} color="inherit" disabled={loading}>
+          Cancelar
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          variant="contained" 
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
+        >
+          {loading ? 'Processando...' : 'Enviar Avaliação'}
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
@@ -13,10 +14,15 @@ namespace EduqPlus.API.Controllers {
 
         private readonly ICursoService _cursoService;
         private readonly IRecommendationService _recommendationService;
+        private readonly IMemoryCache? _cache;
 
-        public CursoController(ICursoService cursoService, IRecommendationService recommendationService) {
+        public CursoController(
+            ICursoService cursoService, 
+            IRecommendationService recommendationService,
+            IMemoryCache? cache = null) {
             _cursoService = cursoService;
             _recommendationService = recommendationService;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -140,19 +146,40 @@ namespace EduqPlus.API.Controllers {
             return Ok(resultados);
         }
 
-        [HttpGet("{id}/recomendacoes")]
+                [HttpGet("{id}/recomendacoes")]
         [AllowAnonymous]
         public async Task<IActionResult> ObterRecomendacoes(Guid id, [FromQuery] int k = 3) {
             try {
+                string cacheKey = $"curso_recs_{id}_{k}";
+                if (_cache != null && _cache.TryGetValue(cacheKey, out List<CursoResponseDTO>? cached) && cached != null) {
+                    return Ok(cached);
+                }
+
                 var cursosIds = await _recommendationService.ObterCursosRecomendadosAsync(id, k);
                 var cursosRecomendados = new List<CursoResponseDTO>();
-                foreach (var cursoId in cursosIds.Take(k)) {
-                    try {
-                        var curso = await _cursoService.ObterPorIdAsync(cursoId);
-                        cursosRecomendados.Add(curso);
-                    } catch {
+
+                if (cursosIds.Any()) {
+                    var cursos = await _cursoService.ObterCursosPorIdsAsync(cursosIds.Take(k));
+                    if (cursos != null && cursos.Any()) {
+                        cursosRecomendados = cursos.ToList();
                     }
                 }
+
+                // Fallback for mock/test compatibility if ObterCursosPorIdsAsync didn't yield items
+                if (!cursosRecomendados.Any() && cursosIds.Any()) {
+                    foreach (var cursoId in cursosIds.Take(k)) {
+                        try {
+                            var curso = await _cursoService.ObterPorIdAsync(cursoId);
+                            if (curso != null) cursosRecomendados.Add(curso);
+                        } catch {
+                        }
+                    }
+                }
+
+                if (_cache != null && cursosRecomendados.Any()) {
+                    _cache.Set(cacheKey, cursosRecomendados, TimeSpan.FromMinutes(15));
+                }
+
                 return Ok(cursosRecomendados);
             } catch (Exception ex) {
                 return BadRequest(new { mensagem = ex.Message });

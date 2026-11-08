@@ -1,4 +1,4 @@
-﻿using EduqPlus.API.DTOs;
+using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Models;
 
@@ -15,5 +15,6 @@ namespace EduqPlus.API.Interfaces {
         Task<bool> ExcluirCursoAsync(Guid id, Guid usuarioId);
         Task VerificarEAtualizarResumoIaAsync(Guid cursoId);
         Task<IEnumerable<CursoResponseDTO>> BuscarCursosInteligenteAsync(string termoBusca);
+        Task<IEnumerable<CursoResponseDTO>> ObterCursosPorIdsAsync(IEnumerable<Guid> ids);
     }
 }

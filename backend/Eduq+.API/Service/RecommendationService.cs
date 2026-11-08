@@ -4,6 +4,7 @@ using EduqPlus.API.DTOs;
 using EduqPlus.API.Interfaces;
 using EduqPlus.API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EduqPlus.API.Service
 {
@@ -13,21 +14,31 @@ namespace EduqPlus.API.Service
         private readonly IConfiguration _configuration;
         private readonly ILogger<RecommendationService> _logger;
         private readonly EduqPlusContext _context;
+        private readonly IMemoryCache? _cache;
 
         public RecommendationService(
             HttpClient httpClient, 
             IConfiguration configuration, 
             ILogger<RecommendationService> logger,
-            EduqPlusContext context)
+            EduqPlusContext context,
+            IMemoryCache? cache = null)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _logger = logger;
             _context = context;
+            _cache = cache;
         }
 
         public async Task<List<Guid>> ObterCursosRecomendadosAsync(Guid cursoAlvoId, int quantidade = 3)
         {
+            var cacheKey = $"recsys_ids_{cursoAlvoId}_{quantidade}";
+            if (_cache != null && _cache.TryGetValue(cacheKey, out List<Guid>? cachedIds) && cachedIds != null)
+            {
+                _logger.LogInformation($"[RECSYS] Recomendações recuperadas do cache em memória para o curso {cursoAlvoId}.");
+                return cachedIds;
+            }
+
             _logger.LogInformation($"[RECSYS] Iniciando busca de recomendações para o curso {cursoAlvoId}.");
 
             var requestPayload = new RecommendationRequestDto
@@ -74,6 +85,11 @@ namespace EduqPlus.API.Service
                 .ToList();
 
             _logger.LogInformation($"[RECSYS] Recebidos {recommendedIds.Count} cursos mais similares com sucesso.");
+
+            if (_cache != null && recommendedIds.Any())
+            {
+                _cache.Set(cacheKey, recommendedIds, TimeSpan.FromMinutes(20));
+            }
 
             return recommendedIds;
         }

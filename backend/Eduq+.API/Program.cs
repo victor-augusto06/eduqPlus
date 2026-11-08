@@ -59,6 +59,7 @@ builder.Services.AddKernel()
     );
 
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<IIaService, IaService>();
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();

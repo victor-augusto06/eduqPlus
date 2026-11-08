@@ -717,5 +717,32 @@ namespace EduqPlus.API.Services {
                 }).ToList() ?? new List<DenunciaResponseDTO>()
             });
         }
-    }
+    
+        public async Task<IEnumerable<CursoResponseDTO>> ObterCursosPorIdsAsync(IEnumerable<Guid> ids) {
+            var idList = ids.Distinct().ToList();
+            if (!idList.Any()) return Enumerable.Empty<CursoResponseDTO>();
+
+            var cursos = await _context.Cursos
+                .AsNoTracking()
+                .Where(c => idList.Contains(c.Id))
+                .Select(c => new CursoResponseDTO {
+                    Id = c.Id,
+                    CategoriaId = c.CategoriaId,
+                    ProdutorId = c.ProdutorId,
+                    UsuarioId = c.UsuarioId,
+                    Titulo = c.Titulo,
+                    DescricaoOriginal = c.DescricaoOriginal ?? string.Empty,
+                    PlataformaHospedagem = c.PlataformaHospedagem,
+                    TrustScore = c.TrustScore,
+                    StatusAuditoria = c.StatusAuditoria ?? EStatusAuditoria.NaoAuditado,
+                    ResumoReputacao = c.ResumoReputacao
+                })
+                .ToListAsync();
+
+            return idList
+                .Select(id => cursos.FirstOrDefault(c => c.Id == id))
+                .Where(c => c != null)
+                .ToList()!;
+        }
+}
 }

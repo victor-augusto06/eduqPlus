@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, Button, Paper, CircularProgress, 
   Grid, Card, CardContent, Chip, Divider, AppBar, Toolbar, IconButton, Rating, Avatar,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Snackbar, Alert
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -49,9 +49,11 @@ const CursoDetalhes = () => {
 
   const [openDeleteDenunciaDialog, setOpenDeleteDenunciaDialog] = useState(false);
   const [denunciaIdParaExcluir, setDenunciaIdParaExcluir] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMsg, setSnackbarMsg] = useState('');
 
-  const carregarDetalhesCurso = async () => {
-    setLoading(true);
+  const carregarDetalhesCurso = async (silencioso = false) => {
+    if (!silencioso) setLoading(true);
     try {
       const response = await api.get(`/Curso/${id}`);
       const dadosCurso = response.data;
@@ -72,7 +74,7 @@ const CursoDetalhes = () => {
     } catch (error) {
       console.error("Erro ao carregar detalhes do curso", error);
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   };
 
@@ -585,7 +587,9 @@ const CursoDetalhes = () => {
         onClose={() => setModalAvaliacaoAberta(false)}
         cursoId={curso.id}
         onSuccess={(recomendacoes) => {
-          carregarDetalhesCurso();
+          carregarDetalhesCurso(true);
+          setSnackbarMsg("Sua avaliação foi enviada com sucesso! Obrigado pelo seu feedback.");
+          setSnackbarOpen(true);
           if (recomendacoes && recomendacoes.length > 0) {
             setCursosRecomendados(recomendacoes.slice(0, 3));
             setModalRecomendacoesAberta(true);
@@ -795,6 +799,17 @@ const CursoDetalhes = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%', boxShadow: 3 }}>
+          {snackbarMsg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

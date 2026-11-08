@@ -108,4 +108,21 @@ public class CursoControllerTests {
         cursos.Should().HaveCount(3);
     }
 
+
+    [Fact]
+    public async Task ObterRecomendacoes_DeveUtilizarObterCursosPorIdsAsync_QuandoDisponivel() {
+        var id = Guid.NewGuid();
+        var recIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        _recServiceMock.Setup(r => r.ObterCursosRecomendadosAsync(id, 3)).ReturnsAsync(recIds);
+        _serviceMock.Setup(s => s.ObterCursosPorIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(recIds.Select(rid => new CursoResponseDTO { Id = rid, Titulo = "BatchRec" }).ToList());
+
+        var resultado = await _controller.ObterRecomendacoes(id);
+
+        var okResult = resultado.Should().BeOfType<OkObjectResult>().Subject;
+        var cursos = okResult.Value as List<CursoResponseDTO>;
+        cursos.Should().NotBeNull();
+        cursos.Should().HaveCount(2);
+        cursos![0].Titulo.Should().Be("BatchRec");
+    }
 }

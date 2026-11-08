@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using EduqPlus.API.DTOs;
 using EduqPlus.API.Enums;
 using EduqPlus.API.Interfaces;
@@ -11,11 +12,17 @@ namespace EduqPlus.API.Service {
         private readonly EduqPlusContext _context;
         private readonly ICursoService _cursoService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IServiceScopeFactory? _scopeFactory;
 
-        public AvaliacaoService(EduqPlusContext context, ICursoService cursoService, IWebHostEnvironment environment) {
+        public AvaliacaoService(
+            EduqPlusContext context, 
+            ICursoService cursoService, 
+            IWebHostEnvironment environment,
+            IServiceScopeFactory? scopeFactory = null) {
             _context = context;
             _cursoService = cursoService;
             _environment = environment;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task<bool> ExcluirAvaliacaoAsync(Guid id, Guid usuarioId) {
@@ -163,7 +170,20 @@ namespace EduqPlus.API.Service {
             curso.AtualizarTrustScore();
             await _context.SaveChangesAsync();
 
-            await _cursoService.VerificarEAtualizarResumoIaAsync(novaAvaliacao.CursoId);
+                        if (_scopeFactory != null) {
+                var cursoIdParaResumo = novaAvaliacao.CursoId;
+                _ = Task.Run(async () => {
+                    try {
+                        using var scope = _scopeFactory.CreateScope();
+                        var scopedCursoService = scope.ServiceProvider.GetRequiredService<ICursoService>();
+                        await scopedCursoService.VerificarEAtualizarResumoIaAsync(cursoIdParaResumo);
+                    } catch (Exception ex) {
+                        Console.WriteLine($"[AVALIACAO_SERVICE] Falha ao atualizar resumo IA em background: {ex.Message}");
+                    }
+                });
+            } else {
+                await _cursoService.VerificarEAtualizarResumoIaAsync(novaAvaliacao.CursoId);
+            }
 
             return new AvaliacaoResponseDTO {
                 Id = novaAvaliacao.Id,
