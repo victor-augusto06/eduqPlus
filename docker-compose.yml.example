@@ -116,6 +116,10 @@ services:
 
     environment:
       - REC_API_KEY=chave-secreta-desenvolvimento
+      - DB_HOST=database
+      - DB_USER=root
+      - DB_PASSWORD=SUA_SENHA_ROOT_AQUI
+      - DB_NAME=eduqplus
 
     restart: unless-stopped
     

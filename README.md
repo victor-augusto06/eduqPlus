@@ -121,7 +121,7 @@ flowchart TD
 
 ### Justificativa da Escolha:
 1. **Natureza Transacional do Sistema:** O Eduq+ é concebido como uma plataforma viva de auditoria descentralizada. Os dados de cursos, avaliações, denúncias e comprovantes são gerados e manipulados dinamicamente pelas interações dos usuários e administradores na base relacional MySQL.
-2. **Data Seeder Automatizado para Demonstração:** Para viabilizar testes, validação da banca e demonstração prática imediata de todas as funcionalidades de IA sem dependências externas, o backend conta com um mecanismo embutido de **Data Seeder** (`backend/Eduq+.API/Data/DataSeeder.cs`). Ao subir os contêineres Docker, o sistema popula automaticamente o banco de dados com uma massa de dados demonstrativa estruturada (cursos de diferentes categorias, avaliações realistas e métricas de reputação).
+2. **Data Seeder Automatizado para Demonstração:** Para viabilizar testes, validação da banca e demonstração prática imediata de todas as funcionalidades de IA sem dependências externas, o backend conta com um mecanismo embutido de **Data Seeder** ([`backend/Eduq+.API/Data/DbInitializer.cs`](file:///c:/Users/WinUser/Eduq+/backend/Eduq+.API/Data/DbInitializer.cs)). Ao subir os contêineres Docker, o sistema popula automaticamente o banco de dados com uma massa de dados demonstrativa estruturada (cursos de diferentes categorias, avaliações realistas e métricas de reputação).
 3. **Treinamento e Inferência Dinâmicos:**
    - O modelo de Machine Learning (`recommendation_service`) treina assincronamente a partir das entidades persistidas diretamente no banco de dados (`SELECT Id, Titulo, DescricaoOriginal, TrustScore FROM Curso`).
    - Os modelos neurais generativos e de representação vetorial (`Llama 3` e `nomic-embed-text`) operam via inferência *zero-shot* e geração de embeddings em tempo de execução, dispensando a necessidade de bases supervisionadas prévias para fine-tuning.
@@ -152,7 +152,7 @@ Contém os pacotes de Ciência de Dados e Machine Learning responsáveis pelo c�
 
 ### 3. Demais Componentes do Sistema
 * **Backend (.NET 10 / C#):** Gerenciado via manifesto de pacotes NuGet em [`backend/Eduq+.API/EduqPlus.API.csproj`](file:///c:/Users/WinUser/Eduq+/backend/Eduq+.API/EduqPlus.API.csproj) (Entity Framework Core, Microsoft Semantic Kernel, Pomelo MySQL).
-* **Frontend (React / TypeScript):** Gerenciado via [`frontend/package.json`](file:///c:/Users/WinUser/Eduq+/frontend/package.json) (Vite, React Router, Tailwind CSS, Lucide React).
+* **Frontend (React / TypeScript):** Gerenciado via [`frontend/package.json`](file:///c:/Users/WinUser/Eduq+/frontend/package.json) (React 19, TypeScript, Vite, React Router 7, Material UI / MUI com Emotion e Axios).
 
 #### Instalação Manual das Dependências Python (Opcional - caso execute sem Docker):
 ```bash
@@ -175,7 +175,7 @@ pip install -r requirements.txt
 
 Seguindo a modelagem de serviços conteinerizados e a arquitetura cliente-servidor descrita na documentação técnica:
 
-* **Camada de Apresentação:** React + TypeScript (SPA)
+* **Camada de Apresentação:** React + TypeScript (SPA) com Material UI (MUI)
 * **Camada de Aplicação (API):** C# ASP.NET Core (.NET 10), Entity Framework Core e Microsoft Semantic Kernel
 * **Camada de Visão Computacional:** Python 3.11 (FastAPI, OpenCV, PyTesseract, PyMuPDF)
 * **Camada de LLM:** Ollama local (Llama 3 para auditoria de comprovantes e consolidação de reputação; Nomic Embed Text para representação vetorial)
@@ -219,11 +219,13 @@ Para garantir que o banco de dados seja criado corretamente e a Inteligência Ar
 Após a inicialização bem-sucedida de todos os contêineres, os serviços estarão acessíveis através dos seguintes mapeamentos de portas:
 
 * **Interface Web do Usuário (Frontend):** `http://localhost:5173`
-* **API RESTful (Backend):** `http://localhost:5292`
+* **API RESTful (Backend):** `http://localhost:5292` *(Documentação Swagger: `http://localhost:5292/swagger`)*
+* **Serviço de Visão Computacional (OCR API):** `http://localhost:8000` *(Documentação Swagger: `http://localhost:8000/docs`)*
+* **Serviço de Recomendação (RecSys API):** `http://localhost:8001` *(Documentação Swagger: `http://localhost:8001/docs`)*
 * **Banco de Dados (MySQL):** `localhost:3306`
 * **Serviço de IA (Ollama API):** `http://localhost:11434`
 
-*Nota:* O backend aplica as migrations do Entity Framework Core e executa automaticamente o **Data Seeder** estruturado na primeira inicialização, populando o banco com a massa de dados para testes imediatos.
+*Nota:* O backend aplica as migrations do Entity Framework Core e executa automaticamente o **DbInitializer (Data Seeder)** na primeira inicialização, populando o banco com a massa de dados para testes imediatos.
 
 ---
 
@@ -242,4 +244,13 @@ A massa de dados inserida automaticamente no banco configura as contas abaixo pa
 ## 🧠 Validação Prática dos Recursos de IA
 
 1. **Busca Semântica por Intenção:** Vá ao catálogo de cursos e pesquise por conceitos abstratos como *"banco de dados corporativo performático"* ou *"ganhos reais corrigidos pela inflação"*. Os embeddings gerados localmente pela IA farão o cruzamento semântico aproximado mesmo que nenhuma palavra exata conste nos títulos.
-2. **Resumo Inteligente de Reputação:** Abra o curso *"Formação Avançada em C#"* ou *"Alocação Estratégica"*. A seção superior exibirá um painel contendo a consolidação automatizada feita pela IA dividida entre "Resumo Geral", "Pontos Fortes" e "Pontos de Atenção" capturados com base nas avaliações reais submetidas no portal .
+2. **Resumo Inteligente de Reputação:** Abra o curso *"Formação Avançada em C#"* ou *"Masterclass de IA e Engenharia de Prompt com Python"*. A seção superior exibirá um painel contendo a consolidação automatizada feita pela IA dividida entre "Resumo Geral", "Pontos Fortes" e "Pontos de Atenção" capturados com base nas avaliações reais submetidas no portal.
+3. **Auditoria Automatizada de Comprovantes (Visão Computacional + Llama 3):** Faça login com uma conta de consumidor (ex.: `carlos.ativo@gmail.com`), acesse a página de detalhes de um curso e clique em *"Avaliar Curso"*. Preencha as notas e envie um comprovante em formato de imagem (`.jpg`, `.png`) ou documento `.pdf`. O sistema executará o pipeline de Visão Computacional (`ocr_service`) e submeterá o texto extraído ao `Llama 3`, concedendo de forma autônoma o selo de *"Compra Verificada"* na avaliação.
+4. **Recomendação Inteligente de Cursos (TF-IDF + KNN):** Ao registrar uma avaliação com nota alta (média $\ge 4.0$), o frontend aciona em segundo plano o microsserviço de recomendação e exibe automaticamente um carrossel interativo (`RecomendacoesCarrosselDialog`) com os $k$ cursos mais similares baseados em proximidade textual e índice *TrustScore*. As consultas contam com cache em memória no backend (`IMemoryCache`) e consultas em lote para resposta com baixa latência.
+
+---
+
+## 💡 Experiência de Uso e Funcionalidades Recentes
+
+* **Identificadores Amigáveis (#):** Todas as tabelas e listagens de dados (como produtores, categorias e denúncias) exibem numeração sequencial simplificada (`#1`, `#2`, etc.) para agilidade visual, mantendo o identificador único (GUID) do banco acessível com um toque/cursor sobre o elemento (Tooltip).
+* **Gerenciamento de Sessão Isolado:** A autenticação utiliza `sessionStorage`, inicializando o frontend deslogado por padrão. Isso permite testar e alternar facilmente entre as diferentes personas (Administrador, Usuário Ativo com registros criados e Novo Usuário limpo) sem resíduos de autenticação.
