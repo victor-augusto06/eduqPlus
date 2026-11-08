@@ -11,6 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { getAuthUser, isAuthenticated } from '../services/auth';
 
 interface Produtor {
   id: string;
@@ -48,9 +49,13 @@ const GerenciarProdutores = () => {
   };
 
   useEffect(() => {
-    const userStr = localStorage.getItem('@EduqPlus:user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+    const user = getAuthUser();
+    if (user) {
+
       setIsAdmin(user.role === 2 || user.Role === 2);
     }
     carregarProdutores();
@@ -90,8 +95,8 @@ const handleSalvar = async () => {
           await api.put(`/Produtor/${produtorAtual.id}`, payload);
         }
       } else {
-        const userStr = localStorage.getItem('@EduqPlus:user');
-        const usuarioId = userStr ? JSON.parse(userStr).id : '';
+        const user = getAuthUser();
+        const usuarioId = user ? (user.id || user.Id || '') : '';
         
         await api.post('/Produtor', { ...payload, usuarioId });
       }

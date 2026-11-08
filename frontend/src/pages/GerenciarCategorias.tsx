@@ -11,6 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { isAuthenticated } from '../services/auth';
 
 interface Categoria {
   id: string;
@@ -44,6 +45,10 @@ const GerenciarCategorias = () => {
   };
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
     carregarCategorias();
   }, []);
 
@@ -69,7 +74,8 @@ const GerenciarCategorias = () => {
         await api.post('/Categoria', { nome: categoriaAtual.nome });
       }
       setOpenModal(false);
-      carregarCategorias();
+
+    carregarCategorias();
     } catch (err) {
       console.error('Erro ao salvar categoria', err);
     }
@@ -84,7 +90,8 @@ const GerenciarCategorias = () => {
     try {
       await api.delete(`/Categoria/${idParaExcluir}`);
       setOpenDeleteModal(false);
-      carregarCategorias();
+
+    carregarCategorias();
     } catch (err) {
       console.error('Erro ao excluir categoria', err);
       setOpenDeleteModal(false);

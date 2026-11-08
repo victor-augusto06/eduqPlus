@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { setAuthSession } from '../services/auth';
 
 const Cadastro = () => {
   const navigate = useNavigate();
@@ -39,8 +40,8 @@ const Cadastro = () => {
           senha 
         });
         
-        localStorage.setItem('@EduqPlus:token', loginResponse.data.token);
-        localStorage.setItem('@EduqPlus:user', JSON.stringify(loginResponse.data.usuario || loginResponse.data));
+        setAuthSession(loginResponse.data.token, loginResponse.data.usuario || loginResponse.data);
+
         
         navigate('/dashboard');
         

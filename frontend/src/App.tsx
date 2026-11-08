@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 import Login from './pages/Login';
@@ -8,6 +9,16 @@ import Cadastro from './pages/CadastroUsuario';
 import EditarCurso from './pages/EditarCurso';
 import GerenciarCategorias from './pages/GerenciarCategorias';
 import GerenciarProdutores from './pages/GerenciarProdutores';
+import { clearAuthSession } from './services/auth';
+
+const RootRedirect = () => {
+  useEffect(() => {
+    // Ao abrir a aplicação no front-end pela rota raiz, garante inicialização deslogada
+    clearAuthSession();
+  }, []);
+
+  return <Navigate to="/dashboard" replace />;
+};
 
 function App() {
   return (
@@ -15,7 +26,7 @@ function App() {
       <CssBaseline /> 
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<RootRedirect />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cursos/:id" element={<CursoDetalhes />} />

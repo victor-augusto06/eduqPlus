@@ -7,6 +7,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import api from '../services/api';
+import { getAuthUser } from '../services/auth';
 
 interface NovaAvaliacaoDialogProps {
   open: boolean;
@@ -77,9 +78,9 @@ const NovaAvaliacaoDialog: React.FC<NovaAvaliacaoDialogProps> = ({ open, onClose
     const formData = new FormData();
     formData.append('cursoId', cursoId);
     
-    const userString = localStorage.getItem('@EduqPlus:user');
-    if (userString) {
-      const user = JSON.parse(userString);
+    const user = getAuthUser();
+    if (user) {
+
       formData.append('usuarioId', user.id); 
     }
 

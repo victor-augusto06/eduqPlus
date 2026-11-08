@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { getAuthUser, isAuthenticated } from '../services/auth';
 
 interface Categoria {
   id: string;
@@ -59,6 +60,10 @@ const CriarCurso = () => {
   };
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
     carregarDependencias();
   }, []);
 
@@ -68,8 +73,8 @@ const CriarCurso = () => {
     setLoadingSubmit(true);
 
     try {
-      const userStr = localStorage.getItem('@EduqPlus:user');
-      const usuarioId = userStr ? JSON.parse(userStr).id : '';
+      const user = getAuthUser();
+      const usuarioId = user ? (user.id || user.Id || '') : '';
 
       const payload = {
         titulo,
@@ -130,8 +135,8 @@ const CriarCurso = () => {
     if (!novoProdutorNome.trim()) return;
     setLoadingProdutor(true);
     try {
-      const userStr = localStorage.getItem('@EduqPlus:user');
-      const usuarioId = userStr ? JSON.parse(userStr).id : '';
+      const user = getAuthUser();
+      const usuarioId = user ? (user.id || user.Id || '') : '';
 
       const payload = {
         usuarioId,

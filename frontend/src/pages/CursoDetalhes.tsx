@@ -9,6 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import api from '../services/api';
+import { getAuthToken, getAuthUser } from '../services/auth';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 import NovaAvaliacaoDialog from './NovaAvaliacaoDialog';
 import NovaDenunciaDialog from './NovaDenunciaDialog';
@@ -81,14 +82,14 @@ const CursoDetalhes = () => {
   useEffect(() => {
     carregarDetalhesCurso();
     
-    const token = localStorage.getItem('@EduqPlus:token');
+    const token = getAuthToken();
     if (token) {
       setIsLoggedIn(true);
     }
 
-    const userStr = localStorage.getItem('@EduqPlus:user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
+    const user = getAuthUser();
+    if (user) {
+
       setIsAdmin(user.role === 2 || user.Role === 2);
       setCurrentUserId(user.id || user.Id || '');
     }
@@ -205,7 +206,7 @@ const CursoDetalhes = () => {
         <Typography variant="h5" color="text.secondary" gutterBottom>
           Curso não encontrado.
         </Typography>
-        <Button variant="contained" onClick={() => navigate('/')}>
+        <Button variant="contained" onClick={() => navigate('/dashboard')}>
           Voltar para o Catálogo
         </Button>
       </Box>

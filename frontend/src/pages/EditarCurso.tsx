@@ -7,6 +7,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import api from '../services/api';
+import { getAuthUser, isAuthenticated } from '../services/auth';
 
 interface Categoria {
   id: string;
@@ -43,11 +44,15 @@ const EditarCurso = () => {
 
   useEffect(() => {
     const carregarDados = async () => {
+      if (!isAuthenticated()) {
+        navigate('/login');
+        return;
+      }
       setLoading(true);
       try {
-        const userStr = localStorage.getItem('@EduqPlus:user');
-        if (userStr) {
-          const user = JSON.parse(userStr);
+        const user = getAuthUser();
+        if (user) {
+
           setIsAdmin(user.role === 2 || user.Role === 2);
           setCurrentUserId(user.id || user.Id || '');
         }
@@ -119,13 +124,13 @@ const EditarCurso = () => {
     }
     
     try {
-      const userStr = localStorage.getItem('@EduqPlus:user');
-      if (!userStr) {
+      const user = getAuthUser();
+      if (!user) {
         alert('Sessão inválida ou expirada. Faça login novamente.');
         return;
       }
 
-      const user = JSON.parse(userStr);
+
       const auditorId = user.id;
       const resultadoEnum = novoResultadoAuditoria === 'Aprovado' ? EStatusAuditoria.Aprovado : EStatusAuditoria.Reprovado;
 

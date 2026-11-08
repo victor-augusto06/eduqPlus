@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Container, Paper, Alert, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { setAuthSession } from '../services/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,8 +17,8 @@ const Login = () => {
     try {
       const response = await api.post('/Usuario/login', { email, senha });
       
-      localStorage.setItem('@EduqPlus:token', response.data.token);
-      localStorage.setItem('@EduqPlus:user', JSON.stringify(response.data.usuario));
+      setAuthSession(response.data.token, response.data.usuario);
+
 
       navigate('/dashboard');
     } catch (err: any) {

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import api from '../services/api';
+import { getAuthToken, getAuthUser, clearAuthSession } from '../services/auth';
 import { type Curso, EStatusAuditoria } from '../types/Curso';
 
 interface Categoria {
@@ -92,15 +93,15 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('@EduqPlus:token');
-    const userStr = localStorage.getItem('@EduqPlus:user');
+    const token = getAuthToken();
+    const user = getAuthUser();
     
     if (token) {
       setIsLoggedIn(true);
     }
     
-    if (userStr) {
-      setCurrentUser(JSON.parse(userStr));
+    if (user) {
+      setCurrentUser(user);
     }
   }, []);
 
@@ -282,8 +283,8 @@ const Dashboard = () => {
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
-      localStorage.removeItem('@EduqPlus:token');
-      localStorage.removeItem('@EduqPlus:user');
+      clearAuthSession();
+      setCurrentUser(null);
       setIsLoggedIn(false);
       navigate('/login');
     } else {
