@@ -60,11 +60,16 @@ const NovaDenunciaDialog: React.FC<NovaDenunciaDialogProps> = ({ open, onClose, 
               label="Motivo da Denúncia"
               onChange={(e) => setCategoria(e.target.value)}
             >
-              <MenuItem value={1}>Conteúdo Enganoso / Propaganda Falsa</MenuItem>
-              <MenuItem value={2}>Plágio / Direitos Autorais</MenuItem>
-              <MenuItem value={3}>Qualidade Extremamente Baixa / Inassistível</MenuItem>
-              <MenuItem value={4}>Conteúdo Ofensivo / Inadequado</MenuItem>
-              <MenuItem value={5}>Outros Motivos</MenuItem>
+              <MenuItem value="PropagandaEnganosa">Conteúdo Enganoso / Propaganda Falsa</MenuItem>
+              <MenuItem value="FraudeOuGolpe">Fraude ou Golpe Financeiro</MenuItem>
+              <MenuItem value="PiratariaOuPlagio">Plágio / Violação de Direitos Autorais</MenuItem>
+              <MenuItem value="FalsaPromessaDeGanhos">Falsa Promessa de Ganhos / Enriquecimento</MenuItem>
+              <MenuItem value="RiscoASaudeOuSeguranca">Risco à Saúde ou Segurança</MenuItem>
+              <MenuItem value="ConteudoImproprio">Conteúdo Ofensivo / Impróprio</MenuItem>
+              <MenuItem value="DiscursoDeOdio">Discurso de Ódio / Discriminação</MenuItem>
+              <MenuItem value="QualidadeInaceitavel">Qualidade Extremamente Baixa / Inassistível</MenuItem>
+              <MenuItem value="Spam">Spam / Conteúdo Irrelevante</MenuItem>
+              <MenuItem value="Outros">Outros Motivos</MenuItem>
             </Select>
           </FormControl>
 

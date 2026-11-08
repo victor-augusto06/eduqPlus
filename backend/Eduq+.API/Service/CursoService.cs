@@ -404,13 +404,17 @@ namespace EduqPlus.API.Services {
 
             _context.RemoveRange(cursoExistente.PromessaCursos);
 
-            var novasPromessas = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
+            var novasPromessas = (cursoDto.PromessaCursos ?? new List<PromessaCursoCreateDTO>()).Select(p => new PromessaCurso {
                 Id = Guid.NewGuid(),
                 CursoId = cursoExistente.Id,
                 Descricao = p.Descricao
             }).ToList();
 
             _context.AddRange(novasPromessas);
+            cursoExistente.PromessaCursos.Clear();
+            foreach (var item in novasPromessas) {
+                cursoExistente.PromessaCursos.Add(item);
+            }
 
             await _context.SaveChangesAsync();
 
@@ -495,13 +499,17 @@ namespace EduqPlus.API.Services {
 
             _context.RemoveRange(cursoExistente.PromessaCursos);
 
-            var novasPromessas = cursoDto.PromessaCursos.Select(p => new PromessaCurso {
+            var novasPromessas = (cursoDto.PromessaCursos ?? new List<PromessaCursoCreateDTO>()).Select(p => new PromessaCurso {
                 Id = Guid.NewGuid(),
                 CursoId = cursoExistente.Id,
                 Descricao = p.Descricao
             }).ToList();
 
             _context.AddRange(novasPromessas);
+            cursoExistente.PromessaCursos.Clear();
+            foreach (var item in novasPromessas) {
+                cursoExistente.PromessaCursos.Add(item);
+            }
 
             await _context.SaveChangesAsync();
 
@@ -660,8 +668,8 @@ namespace EduqPlus.API.Services {
                     PassouNoFiltroTextual = contemTermoTextual
                 };
             })
-                .Where(res => (res.Similaridade > 0.73 || res.PassouNoFiltroTextual) &&
-                      (!usuarioBuscaQualidade || (res.MediaReal >= 3.0 && res.Curso.Avaliacoes.Count > 0)))
+                .Where(res => (res.Similaridade > 0.45 || res.PassouNoFiltroTextual) &&
+                      (!usuarioBuscaQualidade || res.Curso.Avaliacoes.Count == 0 || res.MediaReal >= 3.0))
                 .OrderByDescending(res => res.PassouNoFiltroTextual)
                 .ThenByDescending(res => res.ScoreFinal)
                 .Take(10)

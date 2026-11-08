@@ -250,6 +250,15 @@ namespace EduqPlus.API.Data {
             await context.Denuncia.AddRangeAsync(denuncias);
             await context.SaveChangesAsync();
 
+            try {
+                var cursosComAvaliacoes = await context.Avaliacoes.Select(a => a.CursoId).Distinct().ToListAsync();
+                foreach (var cid in cursosComAvaliacoes) {
+                    await cursoService.VerificarEAtualizarResumoIaAsync(cid);
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"[SEED] Aviso ao gerar resumos iniciais de IA: {ex.Message}");
+            }
+
             Console.WriteLine("[SEED] Base de dados gerada com sucesso! Gatilhos executados com êxito.");
         }
     }

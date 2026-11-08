@@ -56,9 +56,12 @@ namespace EduqPlus.API.Service {
                     }
                 }
 
+                if (avaliacaoExistente.Curso != null && avaliacaoExistente.Curso.Avaliacoes != null) {
+                    avaliacaoExistente.Curso.Avaliacoes.Remove(avaliacaoExistente);
+                }
                 _context.Avaliacoes.Remove(avaliacaoExistente);
 
-                avaliacaoExistente.Curso.AtualizarTrustScore();
+                avaliacaoExistente.Curso?.AtualizarTrustScore();
 
                 await _context.SaveChangesAsync();
 

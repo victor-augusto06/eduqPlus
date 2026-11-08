@@ -143,7 +143,7 @@ const CursoDetalhes = () => {
 
   const handleIniciarEdicaoDenuncia = (d: any) => {
     setSelectedDenunciaId(d.id);
-    setCategoriaDenuncia(Number(d.categoria));
+    setCategoriaDenuncia(d.categoria);
     setRelatoDetalhado(d.relatoDetalhado);
     
     let statusNum = 1;
@@ -158,7 +158,7 @@ const CursoDetalhes = () => {
   const handleSalvarEdicaoDenuncia = async () => {
     try {
       const payload: any = {
-        categoria: Number(categoriaDenuncia),
+        categoria: categoriaDenuncia,
         relatoDetalhado: relatoDetalhado
       };
 
@@ -249,13 +249,40 @@ const CursoDetalhes = () => {
   };
 
   const getDenunciaCategoriaLabel = (cat: string | number) => {
-    switch (Number(cat)) {
-      case 1: return 'Conteúdo Enganoso / Propaganda Falsa';
-      case 2: return 'Plágio / Direitos Autorais';
-      case 3: return 'Qualidade Baixa / Inassistível';
-      case 4: return 'Conteúdo Ofensivo / Inadequado';
-      case 5: return 'Outros Motivos';
-      default: return String(cat); 
+    const s = String(cat).toLowerCase();
+    switch (s) {
+      case '0':
+      case 'propagandaenganosa':
+        return 'Conteúdo Enganoso / Propaganda Falsa';
+      case '1':
+      case 'fraudeougolpe':
+        return 'Fraude ou Golpe Financeiro';
+      case '2':
+      case 'piratariaouplagio':
+        return 'Plágio / Direitos Autorais';
+      case '3':
+      case 'falsapromessadeganhos':
+        return 'Falsa Promessa de Ganhos';
+      case '4':
+      case 'riscoasaudeouseguranca':
+        return 'Risco à Saúde ou Segurança';
+      case '5':
+      case 'conteudoimproprio':
+        return 'Conteúdo Impróprio / Ofensivo';
+      case '6':
+      case 'discursodeodio':
+        return 'Discurso de Ódio';
+      case '7':
+      case 'qualidadeinaceitavel':
+        return 'Qualidade Extremamente Baixa';
+      case '8':
+      case 'spam':
+        return 'Spam';
+      case '9':
+      case 'outros':
+        return 'Outros Motivos';
+      default:
+        return String(cat);
     }
   };
 
@@ -725,11 +752,16 @@ const CursoDetalhes = () => {
               select fullWidth label="Categoria/Motivo" margin="normal" variant="outlined"
               value={categoriaDenuncia} onChange={(e) => setCategoriaDenuncia(e.target.value)}
             >
-              <MenuItem value={1}>Conteúdo Enganoso / Propaganda Falsa</MenuItem>
-              <MenuItem value={2}>Plágio / Direitos Autorais</MenuItem>
-              <MenuItem value={3}>Qualidade Baixa / Inassistível</MenuItem>
-              <MenuItem value={4}>Conteúdo Ofensivo / Inadequado</MenuItem>
-              <MenuItem value={5}>Outros Motivos</MenuItem>
+              <MenuItem value="PropagandaEnganosa">Conteúdo Enganoso / Propaganda Falsa</MenuItem>
+              <MenuItem value="FraudeOuGolpe">Fraude ou Golpe Financeiro</MenuItem>
+              <MenuItem value="PiratariaOuPlagio">Plágio / Violação de Direitos Autorais</MenuItem>
+              <MenuItem value="FalsaPromessaDeGanhos">Falsa Promessa de Ganhos / Enriquecimento</MenuItem>
+              <MenuItem value="RiscoASaudeOuSeguranca">Risco à Saúde ou Segurança</MenuItem>
+              <MenuItem value="ConteudoImproprio">Conteúdo Ofensivo / Impróprio</MenuItem>
+              <MenuItem value="DiscursoDeOdio">Discurso de Ódio / Discriminação</MenuItem>
+              <MenuItem value="QualidadeInaceitavel">Qualidade Extremamente Baixa / Inassistível</MenuItem>
+              <MenuItem value="Spam">Spam / Conteúdo Irrelevante</MenuItem>
+              <MenuItem value="Outros">Outros Motivos</MenuItem>
             </TextField>
             <TextField
               fullWidth label="Relato Detalhado" multiline rows={4} margin="normal" variant="outlined"

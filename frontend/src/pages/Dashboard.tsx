@@ -75,7 +75,7 @@ const Dashboard = () => {
   const carregarCursosBase = async (paginaAtual: number) => {
     setLoading(true);
     try {
-      const response = await api.get(`/Curso?pageNumber=${paginaAtual}&pageSize=10`);
+      const response = await api.get(`/Curso?pagina=${paginaAtual}&tamanho=10`);
       
       const data = response.data;
       if (Array.isArray(data)) {

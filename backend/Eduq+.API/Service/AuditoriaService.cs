@@ -106,6 +106,10 @@ namespace EduqPlus.API.Service {
             };
 
             _context.Auditoria.Add(novaAuditoria);
+            var cursoParaAuditar = await _context.Cursos.FindAsync(auditoriaDto.CursoId);
+            if (cursoParaAuditar != null) {
+                cursoParaAuditar.StatusAuditoria = auditoriaDto.Resultado;
+            }
             await _context.SaveChangesAsync();
 
             return new AuditoriaResponseDTO {
@@ -131,9 +135,15 @@ namespace EduqPlus.API.Service {
                 throw new Exception("Auditoria não encontrada.");
 
             auditoriaExistente.AuditorId = auditorId;
-            auditoriaExistente.CriterioAnalisado = auditoriaDto.CriterioAnalisado;
+            if (!string.IsNullOrWhiteSpace(auditoriaDto.CriterioAnalisado)) {
+                auditoriaExistente.CriterioAnalisado = auditoriaDto.CriterioAnalisado;
+            }
             auditoriaExistente.Resultado = auditoriaDto.Resultado;
             auditoriaExistente.ObservacaoAuditor = auditoriaDto.ObservacaoAuditor;
+
+            if (auditoriaExistente.Curso != null) {
+                auditoriaExistente.Curso.StatusAuditoria = auditoriaDto.Resultado;
+            }
 
             await _context.SaveChangesAsync();
 

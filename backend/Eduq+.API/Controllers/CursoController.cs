@@ -27,13 +27,18 @@ namespace EduqPlus.API.Controllers {
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ObterTodos([FromQuery] int pagina = 1, [FromQuery] int tamanho = 10) {
-            if (pagina <= 0) pagina = 1;
-            if (tamanho <= 0) tamanho = 10;
+        public async Task<IActionResult> ObterTodos([FromQuery] int? pagina = null, [FromQuery] int? tamanho = null, [FromQuery] int? pageNumber = null, [FromQuery] int? pageSize = null) {
+            int pag = pagina ?? pageNumber ?? 1;
+            int tam = tamanho ?? pageSize ?? 10;
+            if (pag <= 0) pag = 1;
+            if (tam <= 0) tam = 10;
 
-            var resultado = await _cursoService.ObterTodosPaginadoAsync(pagina, tamanho);
+            var resultado = await _cursoService.ObterTodosPaginadoAsync(pag, tam);
             return Ok(resultado);
         }
+
+
+
 
         [HttpGet("{id}")]
         [AllowAnonymous]

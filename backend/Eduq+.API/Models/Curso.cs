@@ -66,9 +66,10 @@ public partial class Curso
     public virtual ICollection<PromessaCurso> PromessaCursos { get; set; } = new List<PromessaCurso>();
 
     public void AtualizarTrustScore() {
-        if (Avaliacoes != null && Avaliacoes.Any()) {
-            double mediaGeral = Avaliacoes.Average(a => (a.NotaEntrega + a.NotaSuporte) / 2.0);
-            TrustScore = (int)Math.Round(mediaGeral, MidpointRounding.AwayFromZero);
+        var avaliacoesValidas = Avaliacoes?.Where(a => a != null).ToList();
+        if (avaliacoesValidas != null && avaliacoesValidas.Any()) {
+            double mediaGeral = avaliacoesValidas.Average(a => (a.NotaEntrega + a.NotaSuporte) / 2.0);
+            TrustScore = Math.Round(mediaGeral, 1);
         } else {
             TrustScore = 0.0;
         }

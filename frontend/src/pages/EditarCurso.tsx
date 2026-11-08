@@ -137,7 +137,8 @@ const EditarCurso = () => {
       if (auditoriaRealizada?.id) {
         await api.put(`/Auditoria/${auditoriaRealizada.id}`, {
           resultado: resultadoEnum,
-          observacaoAuditor: novaObservacaoAuditoria
+          observacaoAuditor: novaObservacaoAuditoria,
+          criterioAnalisado: novoCriterioAnalisado
         });
       } else {
         await api.post('/Auditoria', {
